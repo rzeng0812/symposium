@@ -1,0 +1,24 @@
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Misc
+.DS_Store
+firebase-debug.log
+*.log
+/tmp/atc_batch_*.py
