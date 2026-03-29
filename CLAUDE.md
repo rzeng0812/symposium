@@ -4,86 +4,138 @@
 
 Symposium is a FastAPI backend that convenes panels of historical figures to answer
 questions. Each figure has a detailed soul config, a harm layer, copyright compliance
-tracking, and post-generation output review. Not yet public.
+tracking, and post-generation output review.
+
+**Status: private repo, iterating. Goes public once BYOK + frontend are done and checklist below is clear.**
 
 ---
 
-## Pre-Launch Blockers (do not publish until resolved)
+## Publishing Decision — Open Source vs. Commercial
 
-### 1. API Cost Architecture
+**Decision (2026-03-28): publish as open source under AGPL-3.0, not as a commercial product.**
 
-Every conversation calls Claude multiple times:
-- `law.py` — 1 call (harm classification)
-- `panel.py` — 1 call (panel selection)
-- `main.py` / `chat.py` — N calls (one per figure, in parallel)
-- `quality.py` — N background calls (auto-scoring)
-- `compliance.py` — N background calls (output review)
+### Why this resolves most blockers
 
-**A single `/ask` with 4 figures = ~10 Claude API calls.** A chat session compounds further.
+**Copyright / Right of Publicity:** The legal risk for figures like Kahlo, Jobs,
+Hawking, Warhol etc. is specifically about *commercial exploitation* of name and
+likeness. Open source with no monetization is educational/research use — explicitly
+tolerated by most estates. The ~30 `review_needed` figures are low risk in this context.
 
-Before going public, decide:
-- User-supplied API keys (limits audience, removes billing risk)
-- Platform pays + subscriptions/credits (requires pricing model)
-- Vercel AI Gateway for unified billing + cost tracking
+**API costs:** Each deployer uses their own Anthropic API key. We pay nothing.
 
-### 2. Copyright / Right of Publicity — ~30 Figures Not Production-Ready
+**Remaining obligations (non-negotiable regardless of license):**
+- No living people — Principle 5, hardcoded, never remove
+- Harm layer — `law.py` must remain in the published codebase
+- Disclaimer — `compliance.py` disclaimer must be in every API response;
+  README must state frontends are required to surface it
 
-`compliance.py` has a full `FIGURE_REGISTRY` with per-figure status. The `review_needed`
-figures are **allowed through in dev mode** but flagged `production_ready: False`.
+### Why AGPL-3.0
 
-For commercial launch, `check_figure_eligibility()` must be hardened to **block**
-`review_needed` figures unless explicitly cleared.
+AGPL requires all derivative works (including hosted services) to also be open source.
+This prevents someone from forking the project, deploying it commercially, and
+triggering the very IP concerns we're avoiding by going open source. MIT/Apache would
+not provide this protection.
 
-**Figures requiring legal clearance or removal before v1 commercial launch:**
+### License file
 
-| Figure | Issue |
-|--------|-------|
-| Einstein | Hebrew University holds publicity rights in some jurisdictions |
-| Feynman | Feynman estate + Caltech hold commercial rights |
-| Kahlo | Frida Kahlo Corporation — highly litigious, active enforcement |
-| Jobs | Apple Inc. + Jobs estate manage likeness |
-| Hawking | Hawking Estate + brand actively managed |
-| Bowie | Troika Entertainment manages brand/likeness |
-| Warhol | Andy Warhol Foundation — aggressive litigant |
-| Picasso | Picasso Administration — commercial use blocked without clearance |
-| Dali | Fundació Gala-Salvador Dalí holds image rights |
-| Morrison | Toni Morrison estate recently established |
-| Angelou | Maya Angelou estate actively manages rights |
+`LICENSE` — AGPL-3.0, added at root.
+
+---
+
+## Roadmap — Private → Public
+
+### Current phase: private repo, iterating
+
+**Before going public, in order:**
+
+1. **BYOK backend wiring** — thread user-supplied API key per request
+   - Accept `X-API-Key` header on all endpoints
+   - Pass to `anthropic.Anthropic(api_key=...)` per request — never store or log
+   - Validate key present, return clear error if missing
+
+2. **Frontend** — Next.js on Vercel
+   - Key input stored in `localStorage`, sent as header only
+   - Figure browser + panel selection
+   - Chat interface (main experience)
+   - Single `/ask` mode
+
+3. **LICENSE** — AGPL-3.0 (prevents commercial forks)
+
+4. **README.md** — setup, API overview, deployment notice, disclaimer requirement
+
+5. **Pre-publish checks** ✅ already clear:
+   - `.env` in `.gitignore` ✅
+   - No `ANTHROPIC_API_KEY` hardcoded in source ✅
+   - No living people block (Principle 5) ✅
+   - Harm layer (`law.py`) ✅
+   - Output review (`compliance.py`) ✅
+   - Disclaimer on every response (Principle 1) ✅
+
+### Business model (decided)
+
+- **Open source** under AGPL-3.0 — no commercial version
+- **BYOK** — users supply their own Anthropic API key
+- **Hosted website** — free, no charge
+- **Self-hostable** — anyone can run it locally
+- **No billing infrastructure needed**
+- Optional: GitHub Sponsors if community grows
+
+### Why private for now
+
+Remaining concerns before public exposure:
+- BYOK wiring not built yet — currently requires server-side API key
+- No frontend — API-only product isn't accessible to general users
+- No LICENSE or README — not ready for contributors
+
+---
+
+## Figures — Copyright Reference
+
+For future decisions about adding figures or pursuing commercial deployment:
+
+**`public_domain` or `mostly_clear` (~70 figures) — safe for all uses:**
+Ancient/medieval figures, figures deceased before ~1930, most scientists and
+philosophers. Full list in `compliance.py` FIGURE_REGISTRY.
+
+**`review_needed` (~30 figures) — open source: low risk / commercial: needs clearance:**
+
+| Figure | Estate / Rightsholder |
+|--------|----------------------|
+| Einstein | Hebrew University of Jerusalem |
+| Feynman | Feynman estate + Caltech |
+| Kahlo | Frida Kahlo Corporation (highly litigious) |
+| Jobs | Apple Inc. + Jobs estate |
+| Hawking | Stephen Hawking Estate |
+| Bowie | Troika Entertainment |
+| Warhol | Andy Warhol Foundation (aggressive litigant) |
+| Picasso | Picasso Administration |
+| Dali | Fundació Gala-Salvador Dalí |
+| Morrison | Toni Morrison estate |
+| Angelou | Maya Angelou estate |
 | Sagan | Carl Sagan Institute + estate |
-| Foucault | Estate + IMEC hold archival rights |
+| Foucault | Estate + IMEC |
 | Arendt | Hannah Arendt Literary Trust |
 | Baldwin | James Baldwin Estate |
-| de Beauvoir | Estate manages rights |
-| Davis (Miles) | Estate actively manages likeness/brand |
-| Chanel | Chanel S.A. holds trademark/brand rights |
-| O'Keeffe | Georgia O'Keeffe Foundation — active enforcement |
+| de Beauvoir | Estate |
+| Davis (Miles) | Miles Davis estate |
+| Chanel | Chanel S.A. (trademark) |
+| O'Keeffe | Georgia O'Keeffe Foundation |
 | Lamarr | Hedy Lamarr estate |
-| Wright F.L. | Frank Lloyd Wright Foundation — trademark active |
-| von Braun | Sensitive: documented use of forced labor; content review needed |
-| Engelbart | Doug Engelbart Institute manages legacy |
-| Hopper | Estate / US Navy archives (lower risk) |
-| Land | Estate has limited claims |
-| Ritchie | Estate has limited claims |
-| Sherlock Holmes | Conan Doyle Estate has been litigious — monitor |
+| Wright F.L. | Frank Lloyd Wright Foundation |
+| von Braun | Sensitive: forced labor history — content review needed regardless |
+| Engelbart | Doug Engelbart Institute |
+| Hopper | Estate / US Navy (lower risk) |
+| Land | Estate (limited claims) |
+| Ritchie | Estate (limited claims) |
+| Sherlock Holmes | Conan Doyle Estate (litigious — monitor) |
 
-**~70 figures are `public_domain` or `mostly_clear` and safe for v1.**
-
-### 3. Disclaimer Enforcement
-
-The disclaimer (Principle 1) is an API response field — nothing prevents a frontend
-from hiding it. Before launch:
-- ToS must require frontends to surface the disclaimer
-- If we build our own frontend, the disclaimer must be visible on every response
-
-### 4. Right of Publicity — Jurisdiction Variance
-
-Even `public_domain` figures can have active estate claims in California and some
-other jurisdictions for commercial use. If the product charges money, get a brief
-legal review covering the ~70 "safe" figures before launch.
+**If we ever pursue commercial deployment:** `check_figure_eligibility()` in
+`compliance.py` must be hardened to block `review_needed` figures unless explicitly
+cleared. Currently they pass through with `production_ready: False` flagged.
 
 ---
 
-## What Is Already Built Well
+## What Is Already Built
 
 - `law.py` — pre-generation harm classification (SAFE/UNSAFE)
 - `compliance.py` — pre-generation eligibility check (living, copyright)
@@ -97,7 +149,7 @@ legal review covering the ~70 "safe" figures before launch.
 
 ---
 
-## Architecture Notes
+## Architecture
 
 - Backend: FastAPI (`main.py`), Python 3.13
 - Figure configs: `figures/configs.py` — all 101 figures, soul prompts, collision triggers
@@ -106,12 +158,13 @@ legal review covering the ~70 "safe" figures before launch.
 - Storage: SQLite (`symposium.db`) — sessions, responses, quality scores, ratings
 - Watch: `watch.py` — CLI tool to watch conversations in real time (Rich or plain)
 - Tests: `tests/test_api.py` — requires live server (`uvicorn main:app --port 8765`)
-- Model: `claude-opus-4-6` throughout (can be parameterized later)
+- Model: `claude-opus-4-6` throughout
 
 ## Running Locally
 
 ```bash
 pip install -r requirements.txt
+cp .env.example .env          # add your ANTHROPIC_API_KEY
 uvicorn main:app --reload --port 8765
 python watch.py "Does free will exist?" --panel socrates nietzsche feynman
 ```
