@@ -25,17 +25,17 @@ def server():
 
 
 @pytest.fixture(scope="session")
-def crew_ids(server):
-    """Pick a fast 3-figure crew for chat tests."""
+def panel_ids(server):
+    """Pick a fast 3-figure panel for chat tests."""
     return ["socrates", "nietzsche", "feynman"]
 
 
 @pytest.fixture(scope="session")
-def chat_session(server, crew_ids):
+def chat_session(server, panel_ids):
     """Start a single chat session shared across turn tests."""
     r = requests.post(f"{BASE}/chat/start", json={
         "question": "Is courage a virtue or a personality trait?",
-        "figure_ids": crew_ids,
+        "figure_ids": panel_ids,
         "max_turns": 3
     })
     assert r.status_code == 200, r.text
@@ -70,7 +70,7 @@ class TestFigures:
         for fig in r.json()["figures"]:
             assert "id" in fig
             assert "name" in fig
-            assert "crew_role" in fig
+            assert "role" in fig
             assert "soul_signature" in fig
 
     def test_figure_detail(self, server):
@@ -85,35 +85,35 @@ class TestFigures:
         assert r.status_code == 404
 
 
-# ─── Crew suggestion ────────────────────────────────────────────────────────
+# ─── Panel suggestion ───────────────────────────────────────────────────────
 
-class TestCrewSuggest:
-    def test_suggest_returns_crew(self, server):
-        r = requests.post(f"{BASE}/crew/suggest", json={
+class TestPanelSuggest:
+    def test_suggest_returns_panel(self, server):
+        r = requests.post(f"{BASE}/panel/suggest", json={
             "question": "What is the nature of reality?",
             "size": 3
         })
         assert r.status_code == 200
         data = r.json()
-        assert len(data["crew"]) == 3
+        assert len(data["panel"]) == 3
         assert "tensions" in data
 
     def test_suggest_empty_question(self, server):
-        r = requests.post(f"{BASE}/crew/suggest", json={"question": "  "})
+        r = requests.post(f"{BASE}/panel/suggest", json={"question": "  "})
         assert r.status_code == 400
 
 
 # ─── Chat: start ────────────────────────────────────────────────────────────
 
 class TestChatStart:
-    def test_opening_round(self, chat_session, crew_ids):
+    def test_opening_round(self, chat_session, panel_ids):
         data = chat_session
         assert "session_id" in data
         assert data["turn"] == 0
         assert data["is_complete"] is False
         # All 3 figures should respond in opening
         speaker_ids = [m["speaker_id"] for m in data["messages"]]
-        for fid in crew_ids:
+        for fid in panel_ids:
             assert fid in speaker_ids, f"{fid} missing from opening round"
 
     def test_opening_messages_not_empty(self, chat_session):
@@ -122,7 +122,7 @@ class TestChatStart:
 
     def test_opening_has_role_labels(self, chat_session):
         for msg in chat_session["messages"]:
-            assert msg["crew_role"] is not None
+            assert msg["role"] is not None
 
     def test_token_usage_tracked(self, chat_session):
         usage = chat_session["token_usage"]

@@ -1,10 +1,10 @@
 """
-Crew selection — picks the figures with maximum collision potential for a given question.
+Panel selection — picks the figures with maximum collision potential for a given question.
 """
 
 import json
 import anthropic
-from figures.configs import FIGURES, DEFAULT_CREW
+from figures.configs import FIGURES, DEFAULT_PANEL
 
 _client = anthropic.Anthropic()
 
@@ -17,13 +17,13 @@ def get_figure(figure_id: str) -> dict | None:
     return FIGURES.get(figure_id)
 
 
-def select_crew(question: str, size: int = 4) -> list[str]:
+def select_panel(question: str, size: int = 4) -> list[str]:
     """
-    Use Claude to select the crew with maximum intellectual tension for a question.
-    Falls back to the default crew on failure.
+    Use Claude to select the panel with maximum intellectual tension for a question.
+    Falls back to the default panel on failure.
     """
     figure_list = "\n".join([
-        f"- {f['id']}: {f['name']} ({f['crew_role']}) — {f['soul_signature']}"
+        f"- {f['id']}: {f['name']} ({f['role']}) — {f['soul_signature']}"
         for f in FIGURES.values()
     ])
 
@@ -31,14 +31,14 @@ def select_crew(question: str, size: int = 4) -> list[str]:
         response = _client.messages.create(
             model="claude-opus-4-6",
             max_tokens=128,
-            system=f"""You select the most intellectually interesting crew to answer a question.
+            system=f"""You select the most intellectually interesting panel to answer a question.
 
 Available figures:
 {figure_list}
 
 Select exactly {size} figures that will produce maximum intellectual tension and worldview diversity when answering the question. Prefer combinations where figures have fundamentally different epistemic methods, values, or approaches to truth.
 
-The most interesting crews include:
+The most interesting panels include:
 - At least one figure who questions premises (Socrates)
 - At least one figure who makes bold declarations (Nietzsche)
 - Figures whose collision triggers are activated by the question's topic
@@ -55,12 +55,12 @@ Respond with ONLY a valid JSON array of figure IDs. Example: ["socrates", "einst
     except Exception:
         pass
 
-    return DEFAULT_CREW[:size]
+    return DEFAULT_PANEL[:size]
 
 
 def get_active_tensions(figure_ids: list[str]) -> list[dict]:
     """
-    Return the collision trigger pairs that exist within a given crew.
+    Return the collision trigger pairs that exist within a given panel.
     """
     tensions = []
     seen = set()

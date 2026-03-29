@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "crew.db"
+DB_PATH = Path(__file__).parent / "symposium.db"
 
 
 def get_conn() -> sqlite3.Connection:
@@ -23,7 +23,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS sessions (
                 id          TEXT PRIMARY KEY,
                 question    TEXT NOT NULL,
-                crew_ids    TEXT NOT NULL,
+                panel_ids    TEXT NOT NULL,
                 created_at  TEXT DEFAULT (datetime('now'))
             );
 
@@ -32,7 +32,7 @@ def init_db():
                 session_id           TEXT NOT NULL,
                 figure_id            TEXT NOT NULL,
                 figure_name          TEXT NOT NULL,
-                crew_role            TEXT NOT NULL,
+                role            TEXT NOT NULL,
                 response_text        TEXT NOT NULL,
                 score_in_character   INTEGER,
                 score_depth          INTEGER,
@@ -58,7 +58,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS chat_sessions (
                 id                  TEXT PRIMARY KEY,
                 question            TEXT NOT NULL,
-                crew_ids            TEXT NOT NULL,
+                panel_ids            TEXT NOT NULL,
                 max_turns           INTEGER NOT NULL DEFAULT 10,
                 turns_used          INTEGER NOT NULL DEFAULT 0,
                 total_input_tokens  INTEGER NOT NULL DEFAULT 0,
@@ -73,7 +73,7 @@ def init_db():
                 turn         INTEGER NOT NULL,
                 speaker_id   TEXT NOT NULL,
                 speaker_name TEXT NOT NULL,
-                crew_role    TEXT,
+                role    TEXT,
                 content      TEXT NOT NULL,
                 is_closing   INTEGER NOT NULL DEFAULT 0,
                 input_tokens  INTEGER NOT NULL DEFAULT 0,
@@ -84,24 +84,24 @@ def init_db():
         """)
 
 
-def save_session(question: str, crew_ids: list[str]) -> str:
+def save_session(question: str, panel_ids: list[str]) -> str:
     session_id = str(uuid.uuid4())[:8]
     with get_conn() as conn:
         conn.execute(
-            "INSERT INTO sessions (id, question, crew_ids) VALUES (?, ?, ?)",
-            (session_id, question, json.dumps(crew_ids))
+            "INSERT INTO sessions (id, question, panel_ids) VALUES (?, ?, ?)",
+            (session_id, question, json.dumps(panel_ids))
         )
     return session_id
 
 
 def save_response(session_id: str, figure_id: str, figure_name: str,
-                  crew_role: str, response_text: str) -> int:
+                  role: str, response_text: str) -> int:
     with get_conn() as conn:
         cursor = conn.execute(
             """INSERT INTO responses
-               (session_id, figure_id, figure_name, crew_role, response_text)
+               (session_id, figure_id, figure_name, role, response_text)
                VALUES (?, ?, ?, ?, ?)""",
-            (session_id, figure_id, figure_name, crew_role, response_text)
+            (session_id, figure_id, figure_name, role, response_text)
         )
         return cursor.lastrowid
 
@@ -145,7 +145,7 @@ def get_session(session_id: str) -> dict | None:
         return {
             "id": session["id"],
             "question": session["question"],
-            "crew_ids": json.loads(session["crew_ids"]),
+            "panel_ids": json.loads(session["panel_ids"]),
             "created_at": session["created_at"],
             "responses": [dict(r) for r in responses],
             "ratings": [dict(r) for r in ratings]
@@ -162,7 +162,7 @@ def get_history(limit: int = 20, offset: int = 0) -> list[dict]:
         result = []
         for s in sessions:
             responses = conn.execute(
-                """SELECT figure_id, figure_name, crew_role,
+                """SELECT figure_id, figure_name, role,
                    score_in_character, score_depth, score_soul_alignment
                    FROM responses WHERE session_id=? ORDER BY id""",
                 (s["id"],)
@@ -170,7 +170,7 @@ def get_history(limit: int = 20, offset: int = 0) -> list[dict]:
             result.append({
                 "id": s["id"],
                 "question": s["question"],
-                "crew_ids": json.loads(s["crew_ids"]),
+                "panel_ids": json.loads(s["panel_ids"]),
                 "created_at": s["created_at"],
                 "responses": [dict(r) for r in responses]
             })
@@ -202,28 +202,28 @@ def get_quality_stats() -> list[dict]:
 
 # ─── Chat storage ────────────────────────────────────────────────────────────
 
-def save_chat_session(question: str, crew_ids: list[str], max_turns: int) -> str:
+def save_chat_session(question: str, panel_ids: list[str], max_turns: int) -> str:
     session_id = str(uuid.uuid4())[:8]
     with get_conn() as conn:
         conn.execute(
-            """INSERT INTO chat_sessions (id, question, crew_ids, max_turns)
+            """INSERT INTO chat_sessions (id, question, panel_ids, max_turns)
                VALUES (?, ?, ?, ?)""",
-            (session_id, question, json.dumps(crew_ids), max_turns)
+            (session_id, question, json.dumps(panel_ids), max_turns)
         )
     return session_id
 
 
 def save_chat_message(session_id: str, turn: int, speaker_id: str,
-                      speaker_name: str, crew_role: str | None,
+                      speaker_name: str, role: str | None,
                       content: str, is_closing: bool = False,
                       input_tokens: int = 0, output_tokens: int = 0) -> int:
     with get_conn() as conn:
         cursor = conn.execute(
             """INSERT INTO chat_messages
-               (session_id, turn, speaker_id, speaker_name, crew_role,
+               (session_id, turn, speaker_id, speaker_name, role,
                 content, is_closing, input_tokens, output_tokens)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (session_id, turn, speaker_id, speaker_name, crew_role,
+            (session_id, turn, speaker_id, speaker_name, role,
              content, int(is_closing), input_tokens, output_tokens)
         )
         return cursor.lastrowid
@@ -261,7 +261,7 @@ def get_chat_history(limit: int = 20, offset: int = 0) -> list[dict]:
             result.append({
                 "id": s["id"],
                 "question": s["question"],
-                "crew_ids": json.loads(s["crew_ids"]),
+                "panel_ids": json.loads(s["panel_ids"]),
                 "max_turns": s["max_turns"],
                 "turns_used": s["turns_used"],
                 "status": s["status"],
@@ -291,7 +291,7 @@ def get_chat_session(session_id: str) -> dict | None:
         return {
             "id": session["id"],
             "question": session["question"],
-            "crew_ids": json.loads(session["crew_ids"]),
+            "panel_ids": json.loads(session["panel_ids"]),
             "max_turns": session["max_turns"],
             "turns_used": session["turns_used"],
             "status": session["status"],

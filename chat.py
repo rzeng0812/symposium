@@ -55,7 +55,7 @@ def _format_history(messages: list[dict]) -> str:
 
 # ─── Speaker selection ──────────────────────────────────────────────────────
 
-def select_next_speakers(last_speaker_id: str, crew: list[dict],
+def select_next_speakers(last_speaker_id: str, panel: list[dict],
                           history: list[dict], n: int = 2) -> list[str]:
     """
     Pick the next 1–2 speakers.
@@ -64,9 +64,9 @@ def select_next_speakers(last_speaker_id: str, crew: list[dict],
     After the user speaks: prefer figures who haven't spoken most recently.
     Fallback: round-robin by recency.
     """
-    eligible = [f for f in crew if f["id"] != last_speaker_id]
+    eligible = [f for f in panel if f["id"] != last_speaker_id]
     if not eligible:
-        return [crew[0]["id"]]
+        return [panel[0]["id"]]
 
     # Track how recently each figure spoke (lower = more recent)
     recent = [m["speaker_id"] for m in history[-8:] if m["speaker_id"] != "user"]
@@ -85,6 +85,7 @@ def select_next_speakers(last_speaker_id: str, crew: list[dict],
     # Fallback: least recently spoken
     eligible.sort(key=lambda f: recent.count(f["id"]))
     return [f["id"] for f in eligible[:n]]
+
 
 
 # ─── Single-figure response ─────────────────────────────────────────────────

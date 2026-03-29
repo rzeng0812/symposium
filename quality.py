@@ -58,7 +58,7 @@ def score_response(figure_id: str, question: str, response_text: str) -> dict:
 
     soul_profile = f"""Name: {figure['name']}
 Soul signature: {figure['soul_signature']}
-Crew role: {figure['crew_role']}
+Role: {figure['role']}
 Communication style excerpt from their profile:
 {figure['system_prompt'][figure['system_prompt'].find('COMMUNICATION STYLE'):figure['system_prompt'].find('TRIBAL NON-INHERITANCE')].strip()}"""
 

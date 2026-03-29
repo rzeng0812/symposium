@@ -14,7 +14,7 @@ import anthropic
 
 from figures.configs import FIGURES
 from law import check_harm
-from crew import get_all_figures, get_figure, select_crew, get_active_tensions
+from panel import get_all_figures, get_figure, select_panel, get_active_tensions
 from storage import (
     init_db, save_session, save_response, save_quality_scores,
     save_rating, get_session, get_history, get_quality_stats,
@@ -48,9 +48,9 @@ init_db()
 class AskRequest(BaseModel):
     question: str
     figure_ids: Optional[list[str]] = None
-    crew_size: int = 4
+    panel_size: int = 4
 
-class CrewSuggestRequest(BaseModel):
+class PanelSuggestRequest(BaseModel):
     question: str
     size: int = 4
 
@@ -63,7 +63,7 @@ class RateRequest(BaseModel):
 class FigureResponse(BaseModel):
     figure_id: str
     name: str
-    crew_role: str
+    role: str
     soul_signature: str
     response: str
 
@@ -75,7 +75,7 @@ class TensionHighlight(BaseModel):
 class AskResponse(BaseModel):
     session_id: str
     question: str
-    crew: list[dict]
+    panel: list[dict]
     responses: list[FigureResponse]
     tensions: list[TensionHighlight]
     compliance: dict
@@ -84,7 +84,7 @@ class AskResponse(BaseModel):
 class ChatStartRequest(BaseModel):
     question: str
     figure_ids: Optional[list[str]] = None
-    crew_size: int = 4
+    panel_size: int = 4
     max_turns: int = 10         # user messages before closing round
 
 class ChatMessageRequest(BaseModel):
@@ -94,7 +94,7 @@ class ChatMessageOut(BaseModel):
     turn: int
     speaker_id: str
     speaker_name: str
-    crew_role: Optional[str] = None
+    role: Optional[str] = None
     content: str
     is_closing: bool = False
 
@@ -118,8 +118,8 @@ def root():
         "endpoints": {
             "GET  /figures":                  "List all available figures",
             "GET  /figures/{id}":             "Get a specific figure's profile",
-            "POST /crew/suggest":             "Get crew recommendation for a question",
-            "POST /ask":                      "Ask the crew a question (single round)",
+            "POST /panel/suggest":            "Get panel recommendation for a question",
+            "POST /ask":                      "Ask the panel a question (single round)",
             "GET  /history":                  "Browse past /ask sessions",
             "GET  /history/{session_id}":     "Get a specific session with full responses",
             "POST /rate":                     "Rate a figure's response (1–5)",
@@ -141,7 +141,7 @@ def list_figures():
                 "name": f["name"],
                 "category": f["category"],
                 "era": f["era"],
-                "crew_role": f["crew_role"],
+                "role": f["role"],
                 "soul_signature": f["soul_signature"]
             }
             for f in FIGURES.values()
@@ -157,18 +157,18 @@ def figure_detail(figure_id: str):
     return {k: v for k, v in figure.items() if k not in ("system_prompt",)}
 
 
-@app.post("/crew/suggest")
-def suggest_crew(request: CrewSuggestRequest):
+@app.post("/panel/suggest")
+def suggest_panel(request: PanelSuggestRequest):
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="question cannot be empty")
-    figure_ids = select_crew(request.question, request.size)
+    figure_ids = select_panel(request.question, request.size)
     return {
         "question": request.question,
-        "crew": [
+        "panel": [
             {
                 "id": fid,
                 "name": FIGURES[fid]["name"],
-                "crew_role": FIGURES[fid]["crew_role"],
+                "role": FIGURES[fid]["role"],
                 "soul_signature": FIGURES[fid]["soul_signature"]
             }
             for fid in figure_ids
@@ -178,8 +178,8 @@ def suggest_crew(request: CrewSuggestRequest):
 
 
 @app.post("/ask", response_model=AskResponse)
-def ask_crew(request: AskRequest, background_tasks: BackgroundTasks):
-    """Ask the crew. Responses are saved and auto-scored in the background."""
+def ask_panel(request: AskRequest, background_tasks: BackgroundTasks):
+    """Ask the panel. Responses are saved and auto-scored in the background."""
     question = request.question.strip()
     if not question:
         raise HTTPException(status_code=400, detail="question cannot be empty")
@@ -203,8 +203,8 @@ def ask_crew(request: AskRequest, background_tasks: BackgroundTasks):
             }
         )
 
-    # ── Select crew ────────────────────────────────────────────────────────
-    figure_ids = request.figure_ids or select_crew(question, request.crew_size)
+    # ── Select panel ───────────────────────────────────────────────────────
+    figure_ids = request.figure_ids or select_panel(question, request.panel_size)
 
     # Principle 5 + 6: eligibility check before any generation
     blocked = []
@@ -245,7 +245,7 @@ def ask_crew(request: AskRequest, background_tasks: BackgroundTasks):
             session_id=session_id,
             figure_id=fig["id"],
             figure_name=fig["name"],
-            crew_role=fig["crew_role"],
+            role=fig["role"],
             response_text=raw_responses[fig["id"]]
         )
         response_ids[fig["id"]] = rid
@@ -264,7 +264,7 @@ def ask_crew(request: AskRequest, background_tasks: BackgroundTasks):
         FigureResponse(
             figure_id=fig["id"],
             name=fig["name"],
-            crew_role=fig["crew_role"],
+            role=fig["role"],
             soul_signature=fig["soul_signature"],
             response=raw_responses[fig["id"]]
         )
@@ -279,7 +279,7 @@ def ask_crew(request: AskRequest, background_tasks: BackgroundTasks):
     return AskResponse(
         session_id=session_id,
         question=question,
-        crew=[{"id": f["id"], "name": f["name"], "crew_role": f["crew_role"]} for f in figures],
+        panel=[{"id": f["id"], "name": f["name"], "role": f["role"]} for f in figures],
         responses=responses,
         tensions=tensions,
         compliance=compliance
@@ -360,7 +360,7 @@ def chat_start(request: ChatStartRequest):
     if not harm["safe"]:
         raise HTTPException(status_code=400, detail={"error": "question_flagged"})
 
-    figure_ids = request.figure_ids or select_crew(question, request.crew_size)
+    figure_ids = request.figure_ids or select_panel(question, request.panel_size)
 
     for fid in figure_ids:
         eligibility = check_figure_eligibility(fid)
@@ -388,12 +388,12 @@ def chat_start(request: ChatStartRequest):
         save_chat_message(
             session_id=session_id, turn=0,
             speaker_id=fid, speaker_name=fig["name"],
-            crew_role=fig["crew_role"], content=text,
+            role=fig["role"], content=text,
             is_closing=False, input_tokens=inp, output_tokens=out
         )
         messages_out.append(ChatMessageOut(
             turn=0, speaker_id=fid, speaker_name=fig["name"],
-            crew_role=fig["crew_role"], content=text, is_closing=False
+            role=fig["role"], content=text, is_closing=False
         ))
 
     update_chat_turn(session_id, turns_used=0,
@@ -413,7 +413,7 @@ def chat_start(request: ChatStartRequest):
 @app.post("/chat/{session_id}", response_model=ChatTurnResponse)
 def chat_message(session_id: str, request: ChatMessageRequest):
     """
-    Send a message to the crew. Returns 1–2 figure responses.
+    Send a message to the panel. Returns 1–2 figure responses.
     When the last allowed turn is reached, also returns closing statements
     from all figures and marks the session complete.
     """
@@ -427,7 +427,7 @@ def chat_message(session_id: str, request: ChatMessageRequest):
     if not message:
         raise HTTPException(status_code=400, detail="message cannot be empty")
 
-    figure_ids = session["crew_ids"]
+    figure_ids = session["panel_ids"]
     figures = [FIGURES[fid] for fid in figure_ids if fid in FIGURES]
     turns_used = session["turns_used"] + 1
     is_last_turn = turns_used >= session["max_turns"]
@@ -447,7 +447,7 @@ def chat_message(session_id: str, request: ChatMessageRequest):
     save_chat_message(
         session_id=session_id, turn=turns_used,
         speaker_id="user", speaker_name="You",
-        crew_role=None, content=message
+        role=None, content=message
     )
     history.append({"speaker_id": "user", "speaker_name": "You",
                     "content": message, "is_closing": False})
@@ -464,7 +464,7 @@ def chat_message(session_id: str, request: ChatMessageRequest):
     # Include user message first so the turn response is self-contained
     messages_out = [ChatMessageOut(
         turn=turns_used, speaker_id="user", speaker_name="You",
-        crew_role=None, content=message, is_closing=False
+        role=None, content=message, is_closing=False
     )]
 
     for fid, text, inp, out in reply_results:
@@ -472,14 +472,14 @@ def chat_message(session_id: str, request: ChatMessageRequest):
         save_chat_message(
             session_id=session_id, turn=turns_used,
             speaker_id=fid, speaker_name=fig["name"],
-            crew_role=fig["crew_role"], content=text,
+            role=fig["role"], content=text,
             is_closing=False, input_tokens=inp, output_tokens=out
         )
         history.append({"speaker_id": fid, "speaker_name": fig["name"],
                         "content": text, "is_closing": False})
         messages_out.append(ChatMessageOut(
             turn=turns_used, speaker_id=fid, speaker_name=fig["name"],
-            crew_role=fig["crew_role"], content=text, is_closing=False
+            role=fig["role"], content=text, is_closing=False
         ))
 
     # If this was the last turn, append closing statements from all figures
@@ -492,12 +492,12 @@ def chat_message(session_id: str, request: ChatMessageRequest):
             save_chat_message(
                 session_id=session_id, turn=turns_used,
                 speaker_id=fid, speaker_name=fig["name"],
-                crew_role=fig["crew_role"], content=text,
+                role=fig["role"], content=text,
                 is_closing=True, input_tokens=inp, output_tokens=out
             )
             messages_out.append(ChatMessageOut(
                 turn=turns_used, speaker_id=fid, speaker_name=fig["name"],
-                crew_role=fig["crew_role"], content=text, is_closing=True
+                role=fig["role"], content=text, is_closing=True
             ))
 
     status = "complete" if is_last_turn else "active"

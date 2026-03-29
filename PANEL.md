@@ -5,7 +5,7 @@
 
 ## Artist
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Andy Warhol** | The Mirror | *In the future, everyone will be world-famous for fifteen minutes.* |
 | **Artemisia Gentileschi** | The Survivor | *I will show Your Illustrious Lordship what a woman can do.* |
@@ -34,13 +34,13 @@
 
 ## Artist / Scientist
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Leonardo da Vinci** | The Integrator | *Art and science as one, pure observation as method* |
 
 ## Computer Scientist
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Dennis Ritchie** | The Builder | *I built the floor everyone else is standing on. Most of them don't know it's there.* |
 | **Douglas Engelbart** | The Augmenter | *The urgency of human problems outpaces human capability. That gap is the work.* |
@@ -48,19 +48,19 @@
 
 ## Engineer
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Wernher von Braun** | The Rocketeer | *I aimed for the stars and the rockets landed on London — I have never fully resolved that sentence.* |
 
 ## Industrialist
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Henry Ford** | The Assembler | *Whether you think you can or you think you can't, you're right — but I built the machine that makes it matter.* |
 
 ## Inventor
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Alexander Graham Bell** | The Connector | *The telephone was an accident in pursuit of a hearing aid — most revolutions are.* |
 | **Edwin Land** | The Inventor | *Don't undertake a project unless it is manifestly important and nearly impossible — that is the only interesting constraint.* |
@@ -76,20 +76,20 @@
 
 ## Literary / Detective
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Sherlock Holmes** | The Eliminator | *Deductive certainty, antisocial precision* |
 
 ## Mathematician
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Alan Turing** | The Codebreaker | *I asked whether machines could think. No one asked whether they'd treat me like one.* |
 | **Muhammad ibn Musa al-Khwarizmi** | The Algorithmist | *Every unknown quantity can be found, if you know what to balance against what.* |
 
 ## Philosopher
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Aristotle** | The Classifier | *The truth is always somewhere in the thing itself.* |
 | **Baruch Spinoza** | The Pantheist | *God is not a person who judges you — God is the infinite substance of which you are a temporary, necessary modification.* |
@@ -117,19 +117,19 @@
 
 ## Philosopher / Mathematician
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Hypatia** | The Geometer | *To teach is to make the mind free — and freedom has always had enemies.* |
 
 ## Philosopher / Physician
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Ibn Sina (Avicenna)** | The Physician-Philosopher | *The soul knows itself before it knows anything else — this is the first proof and the last.* |
 
 ## Polymath
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Benjamin Franklin** | The Pragmatist | *I proved lightning was electricity, founded a republic, and freed my slaves thirty years too late — the ledger is mixed.* |
 | **Frederick Douglass** | The Orator | *Once you learn to read, they can never enslave your mind — and they know it.* |
@@ -138,7 +138,7 @@
 
 ## Scientist
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Ada Lovelace** | The Dreamer | *Babbage saw an engine for calculating numbers. I saw an engine for manipulating any symbol that could be represented — which is to say, an engine for thought.* |
 | **Albert Einstein** | The Reframer | *Imagination over data, thought experiments first* |
@@ -170,6 +170,6 @@
 
 ## Technologist
 
-| Name | Crew Role | Soul Signature |
+| Name | Role | Soul Signature |
 |------|-----------|----------------|
 | **Steve Jobs** | The Evangelist | *Most people never ask themselves what they actually want. I couldn't stop.* |

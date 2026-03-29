@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-watch.py — watch the crew argue in real time.
+watch.py — watch the panel argue in real time.
 
 Usage:
   python watch.py
   python watch.py "What is the nature of justice?"
-  python watch.py "Does free will exist?" --crew socrates nietzsche feynman
+  python watch.py "Does free will exist?" --panel socrates nietzsche feynman
   python watch.py "Is beauty objective?" --turns 5 --size 3
 """
 
@@ -92,9 +92,9 @@ def _render_message(msg: dict, show_turn: bool = False):
         if sid == "user":
             label = ">> You"
         elif msg.get("is_closing"):
-            label = f"{msg['speaker_name']} [{msg['crew_role']}] — closing"
+            label = f"{msg['speaker_name']} [{msg['role']}] — closing"
         else:
-            label = f"{msg['speaker_name']} [{msg['crew_role']}]"
+            label = f"{msg['speaker_name']} [{msg['role']}]"
 
         title = Text(label, style=colour)
         panel = Panel(
@@ -110,9 +110,9 @@ def _render_message(msg: dict, show_turn: bool = False):
         if sid == "user":
             print(f"\n>> You:")
         elif msg.get("is_closing"):
-            print(f"\n{msg['speaker_name']} [{msg['crew_role']}] — closing:")
+            print(f"\n{msg['speaker_name']} [{msg['role']}] — closing:")
         else:
-            print(f"\n{msg['speaker_name']} [{msg['crew_role']}]:")
+            print(f"\n{msg['speaker_name']} [{msg['role']}]:")
         print(msg["content"])
 
 
@@ -135,8 +135,8 @@ def _token_line(usage: dict, turns_remaining: int):
         print(f"\n({line})\n")
 
 
-def _pick_crew() -> list[str] | None:
-    """Interactive crew picker."""
+def _pick_panel() -> list[str] | None:
+    """Interactive panel picker."""
     data = _get("/figures")
     figures = data["figures"]
 
@@ -148,7 +148,7 @@ def _pick_crew() -> list[str] | None:
         t.add_column("Role", style="dim")
         t.add_column("Soul signature", style="italic dim")
         for i, f in enumerate(figures, 1):
-            t.add_row(str(i), f["id"], f["name"], f["crew_role"], f["soul_signature"][:60])
+            t.add_row(str(i), f["id"], f["name"], f["role"], f["soul_signature"][:60])
         console.print(t)
         raw = Prompt.ask(
             "\nEnter figure IDs separated by spaces (or press Enter for auto-select)",
@@ -167,11 +167,11 @@ def _pick_crew() -> list[str] | None:
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="Watch the crew argue.")
+    parser = argparse.ArgumentParser(description="Watch the panel argue.")
     parser.add_argument("question", nargs="?", help="Opening question")
-    parser.add_argument("--crew", nargs="+", help="Figure IDs")
+    parser.add_argument("--panel", nargs="+", help="Figure IDs")
     parser.add_argument("--turns", type=int, default=5, help="Max turns (default: 5)")
-    parser.add_argument("--size", type=int, default=3, help="Crew size if auto-selecting (default: 3)")
+    parser.add_argument("--size", type=int, default=3, help="Panel size if auto-selecting (default: 3)")
     parser.add_argument("--demo", action="store_true", help="Run a full auto conversation without user input")
     args = parser.parse_args()
 
@@ -199,46 +199,46 @@ def main():
         print("Question cannot be empty.")
         sys.exit(1)
 
-    # ── Crew ────────────────────────────────────────────────────────────────
-    crew_ids = args.crew
-    if not crew_ids:
-        crew_ids = _pick_crew()   # None = auto
+    # ── Panel ───────────────────────────────────────────────────────────────
+    panel_ids = args.panel
+    if not panel_ids:
+        panel_ids = _pick_panel()   # None = auto
 
     # ── Start session ───────────────────────────────────────────────────────
     if RICH:
-        with console.status("[dim]Summoning the crew…[/dim]"):
+        with console.status("[dim]Convening the panel…[/dim]"):
             payload = {
                 "question": question,
                 "max_turns": args.turns,
-                "crew_size": args.size,
+                "panel_size": args.size,
             }
-            if crew_ids:
-                payload["figure_ids"] = crew_ids
+            if panel_ids:
+                payload["figure_ids"] = panel_ids
             data = _post("/chat/start", payload)
     else:
-        print("\nSummoning the crew…")
+        print("\nConvening the panel…")
         payload = {
             "question": question,
             "max_turns": args.turns,
-            "crew_size": args.size,
+            "panel_size": args.size,
         }
-        if crew_ids:
-            payload["figure_ids"] = crew_ids
+        if panel_ids:
+            payload["figure_ids"] = panel_ids
         data = _post("/chat/start", payload)
 
     session_id = data["session_id"]
     speakers = {m["speaker_id"]: m["speaker_name"] for m in data["messages"]}
 
-    # Print crew roster
+    # Print panel
     if RICH:
-        crew_line = "  ".join(
+        panel_line = "  ".join(
             f"[{_colour(sid)}]{name}[/{_colour(sid)}]"
             for sid, name in speakers.items()
         )
-        console.print(f"Crew: {crew_line}   [dim]session: {session_id}[/dim]\n")
+        console.print(f"Panel: {panel_line}   [dim]session: {session_id}[/dim]\n")
     else:
         names = " · ".join(speakers.values())
-        print(f"Crew: {names}  (session: {session_id})\n")
+        print(f"Panel: {names}  (session: {session_id})\n")
 
     # ── Opening round ───────────────────────────────────────────────────────
     _section("OPENING")
