@@ -17,6 +17,9 @@ env/
 dist/
 build/
 
+# Conversations (local only)
+conversations/
+
 # Misc
 .DS_Store
 firebase-debug.log
