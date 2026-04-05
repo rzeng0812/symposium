@@ -14,8 +14,6 @@ Speaker selection priority:
 import concurrent.futures
 import anthropic
 
-_client = anthropic.Anthropic()
-
 # ─── Prompt templates ──────────────────────────────────────────────────────
 
 _CHAT_PROMPT = """\
@@ -91,14 +89,15 @@ def select_next_speakers(last_speaker_id: str, panel: list[dict],
 # ─── Single-figure response ─────────────────────────────────────────────────
 
 def _call_figure(figure: dict, question: str,
-                 history: list[dict], closing: bool) -> tuple[str, int, int]:
+                 history: list[dict], closing: bool, api_key: str) -> tuple[str, int, int]:
     """Returns (text, input_tokens, output_tokens)."""
+    client = anthropic.Anthropic(api_key=api_key)
     template = _CLOSING_PROMPT if closing else _CHAT_PROMPT
     user_content = template.format(
         question=question,
         history=_format_history(history)
     )
-    with _client.messages.stream(
+    with client.messages.stream(
         model="claude-opus-4-6",
         max_tokens=1024,
         thinking={"type": "adaptive"},
@@ -115,10 +114,10 @@ def _call_figure(figure: dict, question: str,
 
 
 def _safe_call(figure: dict, question: str,
-               history: list[dict], closing: bool) -> tuple[str, str, int, int]:
+               history: list[dict], closing: bool, api_key: str) -> tuple[str, str, int, int]:
     """Wraps _call_figure with a fallback. Returns (figure_id, text, inp, out)."""
     try:
-        text, inp, out = _call_figure(figure, question, history, closing)
+        text, inp, out = _call_figure(figure, question, history, closing, api_key)
         return figure["id"], text, inp, out
     except Exception:
         fallback = (
@@ -132,7 +131,7 @@ def _safe_call(figure: dict, question: str,
 # ─── Multi-figure parallel rounds ───────────────────────────────────────────
 
 def _run_parallel(figures: list[dict], question: str,
-                  history: list[dict], closing: bool) -> list[tuple]:
+                  history: list[dict], closing: bool, api_key: str) -> list[tuple]:
     """
     Run a set of figures in parallel.
     Returns list of (figure_id, text, input_tokens, output_tokens),
@@ -142,7 +141,7 @@ def _run_parallel(figures: list[dict], question: str,
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(figures)) as ex:
         futures = {
-            ex.submit(_safe_call, fig, question, history, closing): fig
+            ex.submit(_safe_call, fig, question, history, closing, api_key): fig
             for fig in figures
         }
         for future in concurrent.futures.as_completed(futures):
@@ -151,18 +150,18 @@ def _run_parallel(figures: list[dict], question: str,
     return results
 
 
-def generate_opening_round(figures: list[dict], question: str) -> list[tuple]:
+def generate_opening_round(figures: list[dict], question: str, api_key: str) -> list[tuple]:
     """Opening positions — all figures, no prior history."""
-    return _run_parallel(figures, question, [], closing=False)
+    return _run_parallel(figures, question, [], closing=False, api_key=api_key)
 
 
 def generate_reply_round(figures: list[dict], question: str,
-                          history: list[dict]) -> list[tuple]:
+                          history: list[dict], api_key: str) -> list[tuple]:
     """1–2 figure replies to a user message — history includes the user turn."""
-    return _run_parallel(figures, question, history, closing=False)
+    return _run_parallel(figures, question, history, closing=False, api_key=api_key)
 
 
 def generate_closing_round(figures: list[dict], question: str,
-                            history: list[dict]) -> list[tuple]:
+                            history: list[dict], api_key: str) -> list[tuple]:
     """All figures give closing statements."""
-    return _run_parallel(figures, question, history, closing=True)
+    return _run_parallel(figures, question, history, closing=True, api_key=api_key)
