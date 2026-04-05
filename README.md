@@ -1,145 +1,137 @@
 # Symposium
 
-**History's greatest minds, convened to answer your questions.**
+AI-powered panels of historical figures, convened to answer your questions.
 
-Symposium assembles a panel of historical figures — philosophers, scientists, artists, mathematicians — and lets them argue with each other in real time. Each figure has a deep soul configuration built from their documented worldview, communication style, and known intellectual tensions with other figures.
+Socrates interrogates. Nietzsche declares. Einstein calculates. You ask.
 
----
+## What it is
 
-## What makes this different
+Symposium is a FastAPI backend that convenes panels of historical figures to engage
+with questions across philosophy, science, ethics, and history. Each figure has a
+detailed soul configuration — voice, values, refusals, collision triggers — and the
+platform selects panels for maximum intellectual tension.
 
-**Soul configs, not personas.** Each figure has a system prompt built from their actual documented positions — their epistemic method, their refusals, their collision triggers with specific other thinkers. Socrates never answers directly. Nietzsche attacks comfortable certainties. When they're in the same room, the tension is structural, not scripted.
-
-**Collision triggers.** Every figure has a `collision_triggers` map — specific pairs where the intellectual conflict is documented and deep. Gentileschi and Foucault on power and the body. Nietzsche and Kant on the foundation of morality. The panel selection algorithm maximises these tensions for a given question.
-
-**A real compliance layer.** Not an afterthought:
-- Pre-generation harm classification (`law.py`)
-- No living people, ever (Principle 5, hardcoded)
-- Per-figure copyright and right-of-publicity registry
-- Post-generation output review: ideological harm, weaponisable content, historical distortion
-- Identity disclaimer on every single response
-
-101 figures across 14 categories. Full principles documented in [`PRINCIPLES.md`](PRINCIPLES.md).
-
----
+**Self-hostable. BYOK. Open source under AGPL-3.0.**
 
 ## Quickstart
 
-**Requirements:** Python 3.13+, an [Anthropic API key](https://console.anthropic.com/)
+Requires Python 3.13+ and an [Anthropic API key](https://console.anthropic.com).
 
 ```bash
-git clone https://github.com/rzeng0812/symposium
+git clone https://github.com/your-org/symposium
 cd symposium
 pip install -r requirements.txt
-cp .env.example .env          # add your ANTHROPIC_API_KEY
 uvicorn main:app --reload --port 8765
 ```
 
-Watch a live conversation:
+The server starts on `http://localhost:8765`. No environment variables required — you
+supply your API key per request.
+
+## BYOK — Bring Your Own Key
+
+Symposium does not manage API keys. You supply your Anthropic API key with every
+request via the `X-API-Key` header:
 
 ```bash
-python watch.py "Does free will exist?" --panel socrates nietzsche feynman
-python watch.py "What is art for?"      --panel kahlo warhol da_vinci
-python watch.py                          # interactive mode: pick question + panel
-```
-
----
-
-## API
-
-```
-GET  /figures                  List all 101 figures with role and soul signature
-GET  /figures/{id}             Full figure profile (system prompt excluded)
-POST /panel/suggest            Get a panel recommendation for a question
-POST /ask                      Single-round: all figures answer in parallel
-POST /chat/start               Start a multi-turn group conversation
-POST /chat/{session_id}        Send a message, get 1–2 figure replies
-GET  /chat/{session_id}        Full conversation history
-GET  /chats                    Browse past sessions
-GET  /history                  Browse past /ask sessions
-GET  /quality                  Aggregate quality scores per figure
-GET  /compliance               Copyright and eligibility status for all figures
-```
-
-### Panel suggestion
-
-```bash
-curl -X POST http://localhost:8765/panel/suggest \
+curl -X POST http://localhost:8765/ask \
+  -H "X-API-Key: sk-ant-..." \
   -H "Content-Type: application/json" \
-  -d '{"question": "Is suffering necessary for great art?", "size": 4}'
+  -d '{"question": "Does free will exist?", "panel_size": 4}'
 ```
 
-### Start a conversation
+Your key is passed directly to the Anthropic API and is never stored or logged.
+
+## API overview
+
+All endpoints require the `X-API-Key` header.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Endpoint index |
+| GET | `/figures` | List all 101 figures |
+| GET | `/figures/{id}` | Get a specific figure's profile |
+| POST | `/panel/suggest` | Recommend a panel for a question |
+| POST | `/ask` | Single-round panel response |
+| GET | `/history` | Browse past sessions |
+| GET | `/history/{id}` | Full session with responses and scores |
+| POST | `/rate` | Rate a figure response (1–5) |
+| GET | `/quality` | Aggregate quality scores per figure |
+| POST | `/chat/start` | Start a multi-turn group chat |
+| POST | `/chat/{id}` | Send a message, receive replies |
+| GET | `/chats` | Browse past chat sessions |
+| GET | `/chat/{id}` | Full chat history |
+| GET | `/compliance` | Copyright and eligibility status per figure |
+
+### Example: single-round ask
 
 ```bash
-# Start
+curl -X POST http://localhost:8765/ask \
+  -H "X-API-Key: sk-ant-..." \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the relationship between power and truth?"}'
+```
+
+### Example: multi-turn chat
+
+```bash
+# Start a chat
 curl -X POST http://localhost:8765/chat/start \
+  -H "X-API-Key: sk-ant-..." \
   -H "Content-Type: application/json" \
-  -d '{"question": "What does justice require of us?", "panel_size": 3}'
+  -d '{"question": "Does consciousness require a body?"}'
 
-# Continue (use session_id from above)
-curl -X POST http://localhost:8765/chat/{session_id} \
+# Continue (use the session_id from the response above)
+curl -X POST http://localhost:8765/chat/SESSION_ID \
+  -H "X-API-Key: sk-ant-..." \
   -H "Content-Type: application/json" \
-  -d '{"message": "But what about those who have nothing to give?"}'
+  -d '{"message": "But what about dreams?"}'
 ```
 
----
+### Example: watch a conversation in your terminal
 
-## The figures
-
-101 figures across 14 categories:
-
-Artists · Scientists · Philosophers · Mathematicians · Inventors · Computer Scientists · Polymaths · and more
-
-Selected examples with their soul signatures:
-
-| Figure | Role | Soul Signature |
-|--------|------|----------------|
-| Socrates | The Destabilizer | *Questions every premise, never answers directly* |
-| Nietzsche | The Provocateur | *Explosive, poetic, attacks comfort* |
-| Hypatia | The Geometer | *To teach is to make the mind free — and freedom has always had enemies.* |
-| Rosalind Franklin | The Invisible Pioneer | *The data does not lie. The people who handle the data sometimes do.* |
-| Alan Turing | The Codebreaker | *I asked whether machines could think. No one asked whether they'd treat me like one.* |
-| Hannah Arendt | The Witness | *Evil needs no motive beyond the absence of thought.* |
-
-Full roster: [`PANEL.md`](PANEL.md)
-
----
-
-## Compliance
-
-Every response includes a compliance block:
-
-```json
-{
-  "compliance": {
-    "disclaimer": "AI-generated interpretation. Not a real quote or verified historical position. Symposium reconstructs figures from documented sources — responses reflect informed interpretation, not the actual words or views of these individuals.",
-    "status": "pass",
-    "figures": {
-      "socrates": { "copyright_status": "public_domain", "production_ready": true, "output_review_status": "pass" }
-    }
-  }
-}
+```bash
+python watch.py "Does free will exist?" --panel socrates nietzsche feynman --api-key sk-ant-...
+# Or: export SYMPOSIUM_API_KEY=sk-ant-... && python watch.py "Does free will exist?"
 ```
 
-The disclaimer must be visible to users on every response.
+## Disclaimer requirement
 
----
+Every `/ask` and `/chat` response includes a `compliance.disclaimer` field:
 
-## Self-hosting
+> AI-generated interpretation. Not a real quote or verified historical position.
+> Symposium reconstructs figures from documented sources — responses reflect
+> informed interpretation, not the actual words or views of these individuals.
 
-Symposium is designed to be self-hosted. You need:
+**Frontends built on Symposium are required to display this disclaimer to users.**
+This is a non-negotiable condition of use under AGPL-3.0.
 
-- An Anthropic API key (all inference runs through the Anthropic API)
-- Python 3.13+ environment
-- SQLite (included, no setup needed)
+## Content safety
 
-For production, swap `symposium.db` for Postgres by updating `storage.py`.
+Symposium has three built-in safety layers:
 
----
+1. **Pre-generation harm classification** — every question is classified before any
+   figure responds. Harmful requests trigger in-character refusals instead of
+   generic error messages.
 
-## Contributing
+2. **Figure eligibility check** — no living people (hardcoded), copyright status
+   verified before generation.
 
-Contributions welcome — new figures, improved soul configs, bug fixes, alternative model support.
+3. **Post-generation output review** — responses are reviewed for ideological harm,
+   weaponizable content, and historical distortion after generation.
 
-For new figures: follow the soul config structure in `figures/configs.py` and add a compliance entry in `compliance.py` before opening a PR. Figures without a compliance registry entry will be blocked at runtime.
+## Running tests
+
+Tests require a live server and a valid Anthropic API key:
+
+```bash
+uvicorn main:app --port 8765 &
+ANTHROPIC_API_KEY=sk-ant-... pytest tests/ -v
+```
+
+## License
+
+[AGPL-3.0](LICENSE)
+
+Derivative works — including services that deploy Symposium — must also be released
+under AGPL-3.0. This prevents commercial forks from exploiting the IP protections
+that the open-source, non-commercial status provides.
