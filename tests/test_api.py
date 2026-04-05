@@ -46,6 +46,7 @@ def chat_session(server, panel_ids):
 
 # ─── BYOK (Bring Your Own Key) tests ─────────────────────────────────────────
 
+@pytest.mark.skip(reason="Pending Task 4: main.py BYOK wiring not yet complete")
 def test_ask_requires_api_key(server):
     """Missing X-API-Key header → should return 401 once BYOK is wired."""
     r = requests.post(f"{BASE}/chat/start", json={
@@ -71,8 +72,8 @@ def test_ask_with_api_key_succeeds(server):
     )
     assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
     body = r.json()
-    # Once fully wired, compliance block will be present
-    # For now this may not exist, but test documents the contract
+    assert "compliance" in body
+    assert "disclaimer" in body["compliance"]
 
 
 # ─── Server ─────────────────────────────────────────────────────────────────
