@@ -57,17 +57,14 @@ def test_ask_requires_api_key(server):
 
 
 def test_ask_with_api_key_succeeds(server):
-    """Valid X-API-Key → 200 with compliance disclaimer present."""
+    """Valid X-API-Key on /ask → 200 with compliance disclaimer."""
     if not API_KEY:
         pytest.skip("ANTHROPIC_API_KEY not set")
     r = requests.post(
-        f"{BASE}/chat/start",
+        f"{BASE}/ask",
         headers={"X-API-Key": API_KEY},
-        json={
-            "question": "What is truth?",
-            "figure_ids": ["socrates"],
-            "max_turns": 1
-        }
+        json={"question": "What is truth?", "figure_ids": ["socrates"], "panel_size": 1},
+        timeout=60
     )
     assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
     body = r.json()
