@@ -35,7 +35,7 @@ def panel_ids(server):
 @pytest.fixture(scope="session")
 def chat_session(server, panel_ids):
     """Start a single chat session shared across turn tests."""
-    r = requests.post(f"{BASE}/chat/start", json={
+    r = requests.post(f"{BASE}/chat/start", headers={"X-API-Key": API_KEY}, json={
         "question": "Is courage a virtue or a personality trait?",
         "figure_ids": panel_ids,
         "max_turns": 3
@@ -46,7 +46,6 @@ def chat_session(server, panel_ids):
 
 # ─── BYOK (Bring Your Own Key) tests ─────────────────────────────────────────
 
-@pytest.mark.skip(reason="Pending Task 4: main.py BYOK wiring not yet complete")
 def test_ask_requires_api_key(server):
     """Missing X-API-Key header → should return 401 once BYOK is wired."""
     r = requests.post(f"{BASE}/chat/start", json={
@@ -91,7 +90,7 @@ class TestServer:
 
 class TestFigures:
     def test_list_figures(self, server):
-        r = requests.get(f"{BASE}/figures")
+        r = requests.get(f"{BASE}/figures", headers={"X-API-Key": API_KEY})
         assert r.status_code == 200
         figures = r.json()["figures"]
         assert len(figures) >= 5
@@ -100,7 +99,7 @@ class TestFigures:
         assert "nietzsche" in ids
 
     def test_figure_has_required_fields(self, server):
-        r = requests.get(f"{BASE}/figures")
+        r = requests.get(f"{BASE}/figures", headers={"X-API-Key": API_KEY})
         for fig in r.json()["figures"]:
             assert "id" in fig
             assert "name" in fig
@@ -108,14 +107,14 @@ class TestFigures:
             assert "soul_signature" in fig
 
     def test_figure_detail(self, server):
-        r = requests.get(f"{BASE}/figures/socrates")
+        r = requests.get(f"{BASE}/figures/socrates", headers={"X-API-Key": API_KEY})
         assert r.status_code == 200
         data = r.json()
         assert data["id"] == "socrates"
         assert "system_prompt" not in data  # must not be exposed
 
     def test_figure_not_found(self, server):
-        r = requests.get(f"{BASE}/figures/voltaire")
+        r = requests.get(f"{BASE}/figures/voltaire", headers={"X-API-Key": API_KEY})
         assert r.status_code == 404
 
 
@@ -123,7 +122,7 @@ class TestFigures:
 
 class TestPanelSuggest:
     def test_suggest_returns_panel(self, server):
-        r = requests.post(f"{BASE}/panel/suggest", json={
+        r = requests.post(f"{BASE}/panel/suggest", headers={"X-API-Key": API_KEY}, json={
             "question": "What is the nature of reality?",
             "size": 3
         })
@@ -133,7 +132,7 @@ class TestPanelSuggest:
         assert "tensions" in data
 
     def test_suggest_empty_question(self, server):
-        r = requests.post(f"{BASE}/panel/suggest", json={"question": "  "})
+        r = requests.post(f"{BASE}/panel/suggest", headers={"X-API-Key": API_KEY}, json={"question": "  "})
         assert r.status_code == 400
 
 
@@ -168,11 +167,11 @@ class TestChatStart:
         assert chat_session["turns_remaining"] == 3
 
     def test_empty_question_rejected(self, server):
-        r = requests.post(f"{BASE}/chat/start", json={"question": "  "})
+        r = requests.post(f"{BASE}/chat/start", headers={"X-API-Key": API_KEY}, json={"question": "  "})
         assert r.status_code == 400
 
     def test_unknown_figure_rejected(self, server):
-        r = requests.post(f"{BASE}/chat/start", json={
+        r = requests.post(f"{BASE}/chat/start", headers={"X-API-Key": API_KEY}, json={
             "question": "What is truth?",
             "figure_ids": ["socrates", "does_not_exist"]
         })
@@ -184,7 +183,7 @@ class TestChatStart:
 class TestChatTurns:
     def test_reply_turn(self, chat_session):
         sid = chat_session["session_id"]
-        r = requests.post(f"{BASE}/chat/{sid}", json={
+        r = requests.post(f"{BASE}/chat/{sid}", headers={"X-API-Key": API_KEY}, json={
             "message": "But aren't courage and virtue both learned behaviours?"
         })
         assert r.status_code == 200
@@ -196,7 +195,7 @@ class TestChatTurns:
 
     def test_user_message_echoed(self, chat_session):
         sid = chat_session["session_id"]
-        r = requests.post(f"{BASE}/chat/{sid}", json={
+        r = requests.post(f"{BASE}/chat/{sid}", headers={"X-API-Key": API_KEY}, json={
             "message": "What separates the brave from the reckless?"
         })
         assert r.status_code == 200
@@ -209,7 +208,7 @@ class TestChatTurns:
         """Final turn should trigger closing statements from all figures."""
         sid = chat_session["session_id"]
         # Send last message (turn 3 of max_turns=3)
-        r = requests.post(f"{BASE}/chat/{sid}", json={
+        r = requests.post(f"{BASE}/chat/{sid}", headers={"X-API-Key": API_KEY}, json={
             "message": "Last question: is there courage without fear?"
         })
         assert r.status_code == 200
@@ -222,7 +221,7 @@ class TestChatTurns:
 
     def test_session_complete_rejects_new_message(self, chat_session):
         sid = chat_session["session_id"]
-        r = requests.post(f"{BASE}/chat/{sid}", json={"message": "one more thing"})
+        r = requests.post(f"{BASE}/chat/{sid}", headers={"X-API-Key": API_KEY}, json={"message": "one more thing"})
         assert r.status_code == 400
 
 
@@ -231,7 +230,7 @@ class TestChatTurns:
 class TestChatRetrieval:
     def test_get_session(self, chat_session):
         sid = chat_session["session_id"]
-        r = requests.get(f"{BASE}/chat/{sid}")
+        r = requests.get(f"{BASE}/chat/{sid}", headers={"X-API-Key": API_KEY})
         assert r.status_code == 200
         data = r.json()
         assert data["id"] == sid
@@ -239,11 +238,11 @@ class TestChatRetrieval:
         assert len(data["messages"]) > 0
 
     def test_get_session_not_found(self, server):
-        r = requests.get(f"{BASE}/chat/doesnotexist")
+        r = requests.get(f"{BASE}/chat/doesnotexist", headers={"X-API-Key": API_KEY})
         assert r.status_code == 404
 
     def test_list_chats(self, chat_session, server):
-        r = requests.get(f"{BASE}/chats")
+        r = requests.get(f"{BASE}/chats", headers={"X-API-Key": API_KEY})
         assert r.status_code == 200
         sessions = r.json()["sessions"]
         ids = [s["id"] for s in sessions]
@@ -251,7 +250,7 @@ class TestChatRetrieval:
 
     def test_session_has_token_totals(self, chat_session):
         sid = chat_session["session_id"]
-        r = requests.get(f"{BASE}/chat/{sid}")
+        r = requests.get(f"{BASE}/chat/{sid}", headers={"X-API-Key": API_KEY})
         usage = r.json()["token_usage"]
         assert usage["input_tokens"] > 1000   # realistic lower bound
         assert usage["output_tokens"] > 200

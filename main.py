@@ -7,7 +7,7 @@ import concurrent.futures
 import json
 from dotenv import load_dotenv
 load_dotenv(override=True)
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
 from pydantic import BaseModel
 from typing import Optional
 import anthropic
@@ -37,10 +37,17 @@ app = FastAPI(
     version="0.2.0"
 )
 
-_client = anthropic.Anthropic()
-
 # Initialize DB on startup
 init_db()
+
+
+def require_api_key(x_api_key: Optional[str] = Header(None, alias="X-API-Key")) -> str:
+    if not x_api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="X-API-Key header is required. Provide your Anthropic API key."
+        )
+    return x_api_key
 
 
 # ─── Request / Response models ─────────────────────────────────────────────
@@ -133,7 +140,7 @@ def root():
 
 
 @app.get("/figures")
-def list_figures():
+def list_figures(api_key: str = Depends(require_api_key)):
     return {
         "figures": [
             {
@@ -150,7 +157,7 @@ def list_figures():
 
 
 @app.get("/figures/{figure_id}")
-def figure_detail(figure_id: str):
+def figure_detail(figure_id: str, api_key: str = Depends(require_api_key)):
     figure = get_figure(figure_id)
     if not figure:
         raise HTTPException(status_code=404, detail=f"Figure '{figure_id}' not found")
@@ -158,10 +165,10 @@ def figure_detail(figure_id: str):
 
 
 @app.post("/panel/suggest")
-def suggest_panel(request: PanelSuggestRequest):
+def suggest_panel(request: PanelSuggestRequest, api_key: str = Depends(require_api_key)):
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="question cannot be empty")
-    figure_ids = select_panel(request.question, request.size)
+    figure_ids = select_panel(request.question, request.size, api_key)
     return {
         "question": request.question,
         "panel": [
@@ -178,14 +185,14 @@ def suggest_panel(request: PanelSuggestRequest):
 
 
 @app.post("/ask", response_model=AskResponse)
-def ask_panel(request: AskRequest, background_tasks: BackgroundTasks):
+def ask_panel(request: AskRequest, background_tasks: BackgroundTasks, api_key: str = Depends(require_api_key)):
     """Ask the panel. Responses are saved and auto-scored in the background."""
     question = request.question.strip()
     if not question:
         raise HTTPException(status_code=400, detail="question cannot be empty")
 
     # ── Law layer ──────────────────────────────────────────────────────────
-    harm = check_harm(question)
+    harm = check_harm(question, api_key)
     if not harm["safe"]:
         figure_ids = request.figure_ids or list(FIGURES.keys())[:2]
         raise HTTPException(
@@ -204,7 +211,7 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks):
         )
 
     # ── Select panel ───────────────────────────────────────────────────────
-    figure_ids = request.figure_ids or select_panel(question, request.panel_size)
+    figure_ids = request.figure_ids or select_panel(question, request.panel_size, api_key)
 
     # Principle 5 + 6: eligibility check before any generation
     blocked = []
@@ -226,7 +233,7 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks):
     raw_responses: dict[str, str] = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(figures)) as executor:
         future_to_figure = {
-            executor.submit(_ask_figure, fig, question): fig
+            executor.submit(_ask_figure, fig, question, api_key): fig
             for fig in figures
         }
         for future, figure in future_to_figure.items():
@@ -252,10 +259,10 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks):
 
     # ── Auto-score + compliance review in background (non-blocking) ───────
     background_tasks.add_task(
-        _score_all_responses, question, figures, raw_responses, response_ids
+        _score_all_responses, question, figures, raw_responses, response_ids, api_key
     )
     background_tasks.add_task(
-        _review_all_outputs, question, figures, raw_responses, session_id
+        _review_all_outputs, question, figures, raw_responses, session_id, api_key
     )
 
     # ── Build response ─────────────────────────────────────────────────────
@@ -287,13 +294,13 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks):
 
 
 @app.get("/history")
-def history(limit: int = 20, offset: int = 0):
+def history(limit: int = 20, offset: int = 0, api_key: str = Depends(require_api_key)):
     """Browse past sessions (summary view)."""
     return {"sessions": get_history(limit, offset)}
 
 
 @app.get("/history/{session_id}")
-def session_detail(session_id: str):
+def session_detail(session_id: str, api_key: str = Depends(require_api_key)):
     """Full session: question, all responses, quality scores, user ratings."""
     session = get_session(session_id)
     if not session:
@@ -302,7 +309,7 @@ def session_detail(session_id: str):
 
 
 @app.post("/rate")
-def rate_response(request: RateRequest):
+def rate_response(request: RateRequest, api_key: str = Depends(require_api_key)):
     """Rate a figure's response in a session (1–5 stars)."""
     if not 1 <= request.rating <= 5:
         raise HTTPException(status_code=400, detail="rating must be between 1 and 5")
@@ -317,13 +324,13 @@ def rate_response(request: RateRequest):
 
 
 @app.get("/quality")
-def quality_stats():
+def quality_stats(api_key: str = Depends(require_api_key)):
     """Aggregate quality scores and user ratings per figure."""
     return {"figures": get_quality_stats()}
 
 
 @app.get("/compliance")
-def compliance_registry():
+def compliance_registry(api_key: str = Depends(require_api_key)):
     """Show compliance status for all figures — copyright, eligibility, production readiness."""
     return {
         "figures": {
@@ -347,7 +354,7 @@ def compliance_registry():
 # ─── Chat endpoints ────────────────────────────────────────────────────────
 
 @app.post("/chat/start", response_model=ChatTurnResponse)
-def chat_start(request: ChatStartRequest):
+def chat_start(request: ChatStartRequest, api_key: str = Depends(require_api_key)):
     """
     Start a group chat. Returns the opening round — all figures respond to
     the question. Use the returned session_id for subsequent /chat/{id} calls.
@@ -356,11 +363,11 @@ def chat_start(request: ChatStartRequest):
     if not question:
         raise HTTPException(status_code=400, detail="question cannot be empty")
 
-    harm = check_harm(question)
+    harm = check_harm(question, api_key)
     if not harm["safe"]:
         raise HTTPException(status_code=400, detail={"error": "question_flagged"})
 
-    figure_ids = request.figure_ids or select_panel(question, request.panel_size)
+    figure_ids = request.figure_ids or select_panel(question, request.panel_size, api_key)
 
     for fid in figure_ids:
         eligibility = check_figure_eligibility(fid)
@@ -377,7 +384,7 @@ def chat_start(request: ChatStartRequest):
     session_id = save_chat_session(question, figure_ids, request.max_turns)
 
     # Opening round — all figures, no prior history
-    results = generate_opening_round(figures, question)
+    results = generate_opening_round(figures, question, api_key)
 
     turn_input = sum(r[2] for r in results)
     turn_output = sum(r[3] for r in results)
@@ -411,7 +418,7 @@ def chat_start(request: ChatStartRequest):
 
 
 @app.post("/chat/{session_id}", response_model=ChatTurnResponse)
-def chat_message(session_id: str, request: ChatMessageRequest):
+def chat_message(session_id: str, request: ChatMessageRequest, api_key: str = Depends(require_api_key)):
     """
     Send a message to the panel. Returns 1–2 figure responses.
     When the last allowed turn is reached, also returns closing statements
@@ -456,7 +463,7 @@ def chat_message(session_id: str, request: ChatMessageRequest):
     next_ids = select_next_speakers("user", figures, history, n=2)
     next_figures = [FIGURES[fid] for fid in next_ids if fid in FIGURES]
 
-    reply_results = generate_reply_round(next_figures, session["question"], history)
+    reply_results = generate_reply_round(next_figures, session["question"], history, api_key)
 
     turn_input = sum(r[2] for r in reply_results)
     turn_output = sum(r[3] for r in reply_results)
@@ -484,7 +491,7 @@ def chat_message(session_id: str, request: ChatMessageRequest):
 
     # If this was the last turn, append closing statements from all figures
     if is_last_turn:
-        closing_results = generate_closing_round(figures, session["question"], history)
+        closing_results = generate_closing_round(figures, session["question"], history, api_key)
         for fid, text, inp, out in closing_results:
             fig = FIGURES[fid]
             turn_input += inp
@@ -517,13 +524,13 @@ def chat_message(session_id: str, request: ChatMessageRequest):
 
 
 @app.get("/chats")
-def list_chats(limit: int = 20, offset: int = 0):
+def list_chats(limit: int = 20, offset: int = 0, api_key: str = Depends(require_api_key)):
     """Browse past chat sessions with question, status, and token usage."""
     return {"sessions": get_chat_history(limit, offset)}
 
 
 @app.get("/chat/{session_id}")
-def chat_history(session_id: str):
+def chat_history(session_id: str, api_key: str = Depends(require_api_key)):
     """Full chat history — all turns, all speakers, token totals."""
     session = get_chat_session(session_id)
     if not session:
@@ -533,9 +540,10 @@ def chat_history(session_id: str):
 
 # ─── Internal helpers ──────────────────────────────────────────────────────
 
-def _ask_figure(figure: dict, question: str) -> str:
+def _ask_figure(figure: dict, question: str, api_key: str) -> str:
     """Get a single figure's response. Called in a thread pool."""
-    with _client.messages.stream(
+    client = anthropic.Anthropic(api_key=api_key)
+    with client.messages.stream(
         model="claude-opus-4-6",
         max_tokens=4096,
         thinking={"type": "adaptive"},
@@ -550,11 +558,11 @@ def _ask_figure(figure: dict, question: str) -> str:
 
 
 def _score_all_responses(question: str, figures: list, raw_responses: dict,
-                          response_ids: dict):
+                          response_ids: dict, api_key: str):
     """Background task: score all responses after they've been returned to the user."""
     for fig in figures:
         fid = fig["id"]
-        scores = score_response(fid, question, raw_responses[fid])
+        scores = score_response(fid, question, raw_responses[fid], api_key)
         if scores.get("in_character") is not None:
             save_quality_scores(
                 response_id=response_ids[fid],
@@ -566,13 +574,13 @@ def _score_all_responses(question: str, figures: list, raw_responses: dict,
 
 
 def _review_all_outputs(question: str, figures: list, raw_responses: dict,
-                         session_id: str):
+                         session_id: str, api_key: str):
     """Background task: run Principle 7 output review on all responses."""
     import sqlite3
     from storage import get_conn
     for fig in figures:
         fid = fig["id"]
-        result = review_output(fid, fig["name"], question, raw_responses[fid])
+        result = review_output(fid, fig["name"], question, raw_responses[fid], api_key)
         with get_conn() as conn:
             conn.execute("""
                 UPDATE responses SET
