@@ -11,6 +11,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -34,12 +35,15 @@ except ImportError:
     RICH = False
 
 
-def _post(path: str, data: dict) -> dict:
+def _post(path: str, data: dict, api_key: str) -> dict:
     body = json.dumps(data).encode()
     req = urllib.request.Request(
         f"{BASE}{path}",
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "X-API-Key": api_key,
+        },
         method="POST"
     )
     try:
@@ -55,9 +59,13 @@ def _post(path: str, data: dict) -> dict:
         sys.exit(1)
 
 
-def _get(path: str) -> dict:
+def _get(path: str, api_key: str) -> dict:
+    req = urllib.request.Request(
+        f"{BASE}{path}",
+        headers={"X-API-Key": api_key},
+    )
     try:
-        with urllib.request.urlopen(f"{BASE}{path}") as resp:
+        with urllib.request.urlopen(req) as resp:
             return json.loads(resp.read())
     except urllib.error.URLError:
         print(f"\n[ERROR] Cannot reach server at {BASE}")
@@ -135,9 +143,9 @@ def _token_line(usage: dict, turns_remaining: int):
         print(f"\n({line})\n")
 
 
-def _pick_panel() -> list[str] | None:
+def _pick_panel(api_key: str) -> list[str] | None:
     """Interactive panel picker."""
-    data = _get("/figures")
+    data = _get("/figures", api_key)
     figures = data["figures"]
 
     if RICH:
@@ -173,7 +181,19 @@ def main():
     parser.add_argument("--turns", type=int, default=5, help="Max turns (default: 5)")
     parser.add_argument("--size", type=int, default=3, help="Panel size if auto-selecting (default: 3)")
     parser.add_argument("--demo", action="store_true", help="Run a full auto conversation without user input")
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("SYMPOSIUM_API_KEY", ""),
+        help="Anthropic API key (or set SYMPOSIUM_API_KEY env var)"
+    )
     args = parser.parse_args()
+
+    # ── API key validation ──────────────────────────────────────────────────
+    api_key = args.api_key
+    if not api_key:
+        print("[ERROR] Anthropic API key required.")
+        print("  Pass --api-key sk-ant-... or set SYMPOSIUM_API_KEY environment variable.")
+        sys.exit(1)
 
     # ── Header ──────────────────────────────────────────────────────────────
     if RICH:
@@ -202,7 +222,7 @@ def main():
     # ── Panel ───────────────────────────────────────────────────────────────
     panel_ids = args.panel
     if not panel_ids:
-        panel_ids = _pick_panel()   # None = auto
+        panel_ids = _pick_panel(api_key)   # None = auto
 
     # ── Start session ───────────────────────────────────────────────────────
     if RICH:
@@ -214,7 +234,7 @@ def main():
             }
             if panel_ids:
                 payload["figure_ids"] = panel_ids
-            data = _post("/chat/start", payload)
+            data = _post("/chat/start", payload, api_key)
     else:
         print("\nConvening the panel…")
         payload = {
@@ -224,7 +244,7 @@ def main():
         }
         if panel_ids:
             payload["figure_ids"] = panel_ids
-        data = _post("/chat/start", payload)
+        data = _post("/chat/start", payload, api_key)
 
     session_id = data["session_id"]
     speakers = {m["speaker_id"]: m["speaker_name"] for m in data["messages"]}
@@ -287,10 +307,10 @@ def main():
         # Send turn
         if RICH:
             with console.status("[dim]Thinking…[/dim]"):
-                data = _post(f"/chat/{session_id}", {"message": user_msg})
+                data = _post(f"/chat/{session_id}", {"message": user_msg}, api_key)
         else:
             print("\nThinking…")
-            data = _post(f"/chat/{session_id}", {"message": user_msg})
+            data = _post(f"/chat/{session_id}", {"message": user_msg}, api_key)
 
         turn_label = f"TURN {data['turn']}"
         if data["is_complete"]:
