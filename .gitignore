@@ -25,3 +25,10 @@ conversations/
 firebase-debug.log
 *.log
 /tmp/atc_batch_*.py
+
+# Internal AI planning docs
+docs/superpowers/
+
+# Personal local scripts (not for public release)
+run_conversation.py
+summarise_for_zh.py
