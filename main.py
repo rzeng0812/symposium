@@ -337,8 +337,10 @@ def compliance_registry(api_key: str = Depends(require_api_key)):
             fid: {
                 "living": entry["living"],
                 "copyright_status": entry["copyright_status"],
-                "copyright_notes": entry["copyright_notes"],
-                "production_ready": entry["production_ready"]
+                "production_ready": entry["production_ready"],
+                "high_sensitivity": entry.get("high_sensitivity", False),
+                "high_sensitivity_notes": entry.get("high_sensitivity_notes", ""),
+                "copyright_notes": entry["copyright_notes"]
             }
             for fid, entry in FIGURE_REGISTRY.items()
         },

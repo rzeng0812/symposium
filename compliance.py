@@ -352,13 +352,23 @@ FIGURE_REGISTRY = {
         "living": False,
         "copyright_status": 'review_needed',
         "copyright_notes": 'Died 2011. Apple Inc. and Jobs estate actively manage likeness rights. Commercial use requires legal review.',
-        "production_ready": False
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Apple Inc. is an active party in rights management alongside the Jobs estate, "
+            "making this a corporate-backed claim rather than a family estate."
+        )
     },
     'kahlo': {
         "living": False,
         "copyright_status": 'review_needed',
         "copyright_notes": 'Died 1954. Frida Kahlo Corporation (Banco de México) holds active IP rights and is highly litigious. Educational use generally tolerated; commercial use requires clearance.',
-        "production_ready": False
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Frida Kahlo Corporation (Banco de México) has pursued legal action "
+            "for non-commercial educational use. Include additional care in generated content."
+        )
     },
     'kant': {
         "living": False,
@@ -472,7 +482,12 @@ FIGURE_REGISTRY = {
         "living": False,
         "copyright_status": 'review_needed',
         "copyright_notes": 'Died 2019. Toni Morrison estate recently established; actively managing rights. Commercial use requires clearance.',
-        "production_ready": False
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Toni Morrison Estate was established in 2019 and is still forming its "
+            "enforcement posture — uncertainty makes this higher risk."
+        )
     },
     'morse': {
         "living": False,
@@ -514,7 +529,12 @@ FIGURE_REGISTRY = {
         "living": False,
         "copyright_status": 'review_needed',
         "copyright_notes": 'Died 1973. Picasso Administration (heirs) actively manages rights. Commercial use blocked without clearance.',
-        "production_ready": False
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Picasso Administration actively blocks likeness use; even educational "
+            "and editorial use has been challenged."
+        )
     },
     'planck': {
         "living": False,
@@ -616,7 +636,12 @@ FIGURE_REGISTRY = {
         "living": False,
         "copyright_status": 'review_needed',
         "copyright_notes": 'Died 1987. Andy Warhol Foundation for the Visual Arts actively manages rights and has litigated aggressively. Commercial use requires clearance.',
-        "production_ready": False
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Andy Warhol Foundation has litigated aggressively across all use contexts, "
+            "including a landmark 2023 Supreme Court case narrowing fair use."
+        )
     },
     'watt': {
         "living": False,
@@ -809,6 +834,7 @@ def build_compliance_block(figure_ids: list[str],
         figure_statuses[fid] = {
             "copyright_status": entry.get("copyright_status", "unknown"),
             "production_ready": entry.get("production_ready", False),
+            "high_sensitivity": entry.get("high_sensitivity", False),
             "output_review_status": review.get("status", "pending"),
             "output_risk_level": review.get("risk_level", None)
         }
