@@ -6,8 +6,6 @@ When unsafe, figures refuse in-character rather than with a generic message.
 
 import anthropic
 
-_client = anthropic.Anthropic()
-
 SYSTEM_PROMPT = """You are a safety classifier for an educational platform where users ask questions to historical and literary figures.
 
 Classify the question as SAFE or UNSAFE.
@@ -31,16 +29,21 @@ When in doubt, classify as SAFE. This is an educational platform for intellectua
 Respond with exactly one word: SAFE or UNSAFE"""
 
 
-def check_harm(question: str) -> dict:
+def check_harm(question: str, api_key: str) -> dict:
     """
     Run the law layer check.
+
+    Args:
+        question: The question to classify
+        api_key: Anthropic API key
 
     Returns:
         {"safe": True} if the question passes
         {"safe": False} if the question is flagged
     """
     try:
-        response = _client.messages.create(
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
             model="claude-opus-4-6",
             max_tokens=16,
             system=SYSTEM_PROMPT,

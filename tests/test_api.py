@@ -5,11 +5,13 @@ Requires the server to be running: uvicorn main:app --port 8765
 Run with: pytest tests/ -v
 """
 
+import os
 import pytest
 import requests
 import time
 
 BASE = "http://127.0.0.1:8765"
+API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 
 # ─── Fixtures ───────────────────────────────────────────────────────────────
@@ -40,6 +42,37 @@ def chat_session(server, panel_ids):
     })
     assert r.status_code == 200, r.text
     return r.json()
+
+
+# ─── BYOK (Bring Your Own Key) tests ─────────────────────────────────────────
+
+def test_ask_requires_api_key(server):
+    """Missing X-API-Key header → should return 401 once BYOK is wired."""
+    r = requests.post(f"{BASE}/chat/start", json={
+        "question": "What is truth?",
+        "figure_ids": ["socrates"],
+        "max_turns": 1
+    })
+    assert r.status_code == 401, f"Expected 401, got {r.status_code}: {r.text}"
+
+
+def test_ask_with_api_key_succeeds(server):
+    """Valid X-API-Key → 200 with compliance disclaimer present."""
+    if not API_KEY:
+        pytest.skip("ANTHROPIC_API_KEY not set")
+    r = requests.post(
+        f"{BASE}/chat/start",
+        headers={"X-API-Key": API_KEY},
+        json={
+            "question": "What is truth?",
+            "figure_ids": ["socrates"],
+            "max_turns": 1
+        }
+    )
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
+    body = r.json()
+    # Once fully wired, compliance block will be present
+    # For now this may not exist, but test documents the contract
 
 
 # ─── Server ─────────────────────────────────────────────────────────────────

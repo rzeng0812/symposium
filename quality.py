@@ -12,8 +12,6 @@ import json
 import anthropic
 from figures.configs import FIGURES
 
-_client = anthropic.Anthropic()
-
 SCORER_SYSTEM = """You are an expert evaluator of historical character portrayal and intellectual depth.
 
 You will be given:
@@ -48,9 +46,15 @@ Respond with ONLY valid JSON in this exact format:
 }"""
 
 
-def score_response(figure_id: str, question: str, response_text: str) -> dict:
+def score_response(figure_id: str, question: str, response_text: str, api_key: str) -> dict:
     """
     Score a single figure response. Returns score dict or defaults on failure.
+
+    Args:
+        figure_id: The figure's ID
+        question: The question that was asked
+        response_text: The figure's response text
+        api_key: Anthropic API key
     """
     figure = FIGURES.get(figure_id)
     if not figure:
@@ -74,7 +78,8 @@ FIGURE'S RESPONSE:
 Score this response."""
 
     try:
-        response = _client.messages.create(
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
             model="claude-opus-4-6",
             max_tokens=256,
             system=SCORER_SYSTEM,

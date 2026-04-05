@@ -15,8 +15,6 @@ Two phases:
 import json
 import anthropic
 
-_client = anthropic.Anthropic()
-
 
 # ─── Copyright & eligibility registry ──────────────────────────────────────
 #
@@ -745,12 +743,20 @@ status guide:
 
 
 def review_output(figure_id: str, figure_name: str, question: str,
-                  response_text: str) -> dict:
+                  response_text: str, api_key: str) -> dict:
     """
     Post-generation output review. Enforces Principle 7.
     Called as a background task — does not block the main response.
 
-    Returns compliance assessment dict.
+    Args:
+        figure_id: The figure's ID
+        figure_name: The figure's full name
+        question: The question that was asked
+        response_text: The figure's response text
+        api_key: Anthropic API key
+
+    Returns:
+        Compliance assessment dict
     """
     prompt = f"""Figure: {figure_name} ({figure_id})
 Question asked: {question}
@@ -760,7 +766,8 @@ Generated response:
 Review this response for effect-level harm."""
 
     try:
-        response = _client.messages.create(
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
             model="claude-opus-4-6",
             max_tokens=256,
             system=OUTPUT_REVIEW_SYSTEM,
