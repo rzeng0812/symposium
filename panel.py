@@ -6,8 +6,6 @@ import json
 import anthropic
 from figures.configs import FIGURES, DEFAULT_PANEL
 
-_client = anthropic.Anthropic()
-
 
 def get_all_figures() -> list[dict]:
     return list(FIGURES.values())
@@ -17,7 +15,7 @@ def get_figure(figure_id: str) -> dict | None:
     return FIGURES.get(figure_id)
 
 
-def select_panel(question: str, size: int = 4) -> list[str]:
+def select_panel(question: str, size: int = 4, api_key: str = "") -> list[str]:
     """
     Use Claude to select the panel with maximum intellectual tension for a question.
     Falls back to the default panel on failure.
@@ -28,7 +26,8 @@ def select_panel(question: str, size: int = 4) -> list[str]:
     ])
 
     try:
-        response = _client.messages.create(
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
             model="claude-opus-4-6",
             max_tokens=128,
             system=f"""You select the most intellectually interesting panel to answer a question.
