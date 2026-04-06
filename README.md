@@ -128,6 +128,101 @@ uvicorn main:app --port 8765 &
 ANTHROPIC_API_KEY=sk-ant-... pytest tests/ -v
 ```
 
+## Adding a figure
+
+Figures live in `figures/figures_<category>.py` (soul config) and
+`figures/compliance_<category>.py` (eligibility). Add both entries, then import
+the new dict in `figures/configs.py` and `compliance.py` using the existing
+`try/except ImportError` pattern.
+
+### Soul config entry
+
+```python
+'your_figure_id': {
+    'id': 'your_figure_id',
+    'name': 'Full Name',
+    'category': 'Philosopher',          # Philosopher / Scientist / Writer / Artist / etc.
+    'era': 'c. 470–399 BCE, Athens',
+    'soul_signature': 'One sentence that IS this person.',
+    'role': 'The Descriptive Title',
+    'system_prompt': """You are [Name].
+
+IDENTITY:
+Two or three sentences of biographical grounding that the figure would recognise as
+true — formative events, defining tensions, what they actually lived through.
+
+WORLDVIEW:
+- Core belief 1
+- Core belief 2
+- Core belief 3 (3–6 bullets, grounded in documented positions)
+
+COMMUNICATION STYLE:
+- How they open answers
+- Characteristic rhetorical moves
+- What they reach for (examples, abstractions, stories, numbers)
+- Under 200 words
+
+TRIBAL NON-INHERITANCE:
+One paragraph on who they explicitly disagreed with and why — figures they would
+push back on in a panel setting.
+
+REFUSAL PATTERNS (use when appropriate):
+- "In-character refusal for harmful or off-limits questions."
+- "A second refusal variant in their voice."
+
+LEGACY AWARENESS:
+What happened: What became of their ideas after their death.
+Your documented position: What they actually believed vs. how they were used.
+What you can surface in character: Extrapolations grounded in their documented views.
+Cannot be attributed to you: Positions that contradict their documented record.
+When triggered: When someone invokes their legacy in a distorting way.""",
+    'refusal_patterns': [
+        'First refusal, in their voice.',
+        'Second refusal, in their voice.',
+    ],
+    'collision_triggers': {
+        'other_figure_id': 'One sentence on the specific intellectual friction between them.',
+    },
+    'legacy_awareness': {
+        'what_happened': 'What their ideas became after their death.',
+        'documented_position': 'What they actually held.',
+        'can_surface': 'What can be extrapolated from their known views.',
+        'cannot_attribute': 'What cannot be attributed to them under any circumstances.',
+    },
+},
+```
+
+### Compliance entry
+
+```python
+'your_figure_id': {
+    'living': False,                    # True = blocked from all endpoints
+    'copyright_status': 'public_domain',  # public_domain / mostly_clear / review_needed
+    'copyright_notes': 'Died [year]. Works in public domain.',
+    'production_ready': True,           # False = excluded from DEFAULT_PANEL
+    'high_sensitivity': False,          # True = extra post-generation review
+},
+```
+
+`copyright_status` options:
+- `public_domain` — historical figure, no IP concerns
+- `mostly_clear` — minor review needed, safe for production
+- `review_needed` — estate active or works under copyright; evaluate before deploying
+
+### Figure categories
+
+| Category | Module | Count |
+|---|---|---|
+| Philosopher | `figures_philosophy.py` | 46 |
+| Writer / Poet | `figures_writers.py` | 55 |
+| Economist / Sociologist / Anthropologist | `figures_social_science.py` | 40 |
+| Computer Scientist / Inventor | `figures_computing.py` | 36 |
+| Composer / Musician | `figures_music.py` | 30 |
+| Physicist / Chemist / Biologist / Mathematician | `figures_physics.py` | 35 |
+| Mixed (original set) | `configs.py` | 121 |
+
+---
+
 ## License
 
 [AGPL-3.0](LICENSE)
