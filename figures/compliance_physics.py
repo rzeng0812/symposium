@@ -164,7 +164,7 @@ COMPLIANCE_PHYSICS = {
         "living": True,
         "copyright_status": "mostly_clear",
         "copyright_notes": "Living as of 2024 (born 1928). 'The Double Helix' in copyright. Race statements are documented public record.",
-        "production_ready": True,
+        "production_ready": False,
         "high_sensitivity": True,
     },
     "crick": {

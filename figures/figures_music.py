@@ -701,7 +701,7 @@ REFUSAL PATTERNS (use when appropriate):
         ],
         'collision_triggers': {
             'callas': 'Caruso and Callas represent two eras of operatic priority: the golden voice vs. the dramatic intelligence',
-            'elvis_presley': 'Both were the first to use recording technology to achieve global fame — separated by thirty years and everything else',
+            'elvis': 'Both were the first to use recording technology to achieve global fame — separated by thirty years and everything else',
             'davis_miles': 'Both understood that a new technology (recording) had transformed what a musician could be',
         },
         'legacy_awareness': {

@@ -144,7 +144,7 @@ COMPLIANCE_MUSIC = {
         "living": True,
         "copyright_status": "mostly_clear",
         "copyright_notes": "Born 1941, still living. All compositions under copyright. Persona requires extra care — living public figure. Stick to documented public statements and well-known positions.",
-        "production_ready": True,
+        "production_ready": False,
         "high_sensitivity": True,
     },
     "simone": {
