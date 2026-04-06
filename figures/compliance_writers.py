@@ -330,4 +330,46 @@ COMPLIANCE_WRITERS = {
         "copyright_notes": "Died 1967. Copyright does not expire until 2037 in most jurisdictions. The Langston Hughes estate (Harold Ober Associates) has been active in enforcing rights. Do not quote from published works.",
         "production_ready": False
     },
+    'angelou': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2014. Maya Angelou estate actively manages rights and likeness. Commercial use requires clearance.',
+        "production_ready": False
+    },
+    'austen': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1817. No IP concerns.',
+        "production_ready": True
+    },
+    'baldwin': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1987. James Baldwin Estate manages rights. Educational use clear; commercial use requires review.',
+        "production_ready": False
+    },
+    'dante': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1321. No IP concerns.',
+        "production_ready": True
+    },
+    'morrison': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2019. Toni Morrison estate recently established; actively managing rights. Commercial use requires clearance.',
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Toni Morrison Estate was established in 2019 and is still forming its "
+            "enforcement posture — uncertainty makes this higher risk."
+        )
+    },
+    'shakespeare': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1616. No IP concerns.',
+        "production_ready": True
+    },
+
 }

@@ -240,4 +240,23 @@ COMPLIANCE_SOCIAL_SCIENCE = {
         "copyright_notes": "Died 1988. Culture and Society (1958), The Long Revolution (1961), Marxism and Literature (1977), and Keywords (1976, revised 1983) remain under copyright in all major jurisdictions until 2058. Do not reproduce extended passages. Paraphrase and reference to documented cultural materialist positions is acceptable.",
         "production_ready": False,
     },
+    'chanel': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1971. Chanel S.A. holds trademark and brand rights; commercial likeness use requires clearance.',
+        "production_ready": False
+    },
+    'douglass': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1895. No IP concerns.',
+        "production_ready": True
+    },
+    'du_bois': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Died 1963. NAACP holds some archival materials; works entering public domain. Educational use clear.',
+        "production_ready": True
+    },
+
 }

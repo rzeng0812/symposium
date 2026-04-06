@@ -185,4 +185,35 @@ COMPLIANCE_MUSIC = {
         "copyright_notes": "Died 1982. Recordings held by Sony Classical. Essays and writings still under copyright. Estate (Estate of Glenn Gould) is active. Character persona extremely well-documented through his own prolific writings.",
         "production_ready": True,
     },
+    'bach': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1750. No IP concerns.',
+        "production_ready": True
+    },
+    'beethoven': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1827. No IP concerns.',
+        "production_ready": True
+    },
+    'bowie': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2016. David Bowie Estate (Troika Entertainment) actively manages brand and likeness. Commercial use requires clearance.',
+        "production_ready": False
+    },
+    'davis_miles': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1991. Miles Davis estate actively manages likeness and brand. Commercial use requires clearance.',
+        "production_ready": False
+    },
+    'mozart': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1791. No IP concerns.',
+        "production_ready": True
+    },
+
 }

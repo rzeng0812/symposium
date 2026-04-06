@@ -244,4 +244,175 @@ COMPLIANCE_PHYSICS = {
         "production_ready": True,
         "high_sensitivity": False,
     },
+    "einstein": {
+        "living": False,
+        "copyright_status": "review_needed",
+        "copyright_notes": (
+            "Hebrew University of Jerusalem holds publicity rights in some jurisdictions. "
+            "Educational/non-commercial use generally permitted. Commercial deployment "
+            "requires legal review."
+        ),
+        "production_ready": False
+    },
+    "feynman": {
+        "living": False,
+        "copyright_status": "review_needed",
+        "copyright_notes": (
+            "Feynman estate and Caltech hold active rights over name and likeness "
+            "for commercial use. Educational use generally tolerated. "
+            "Requires legal review before commercial deployment."
+        ),
+        "production_ready": False
+    },
+    'bohr': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Died 1962. Niels Bohr Archive holds some archival materials; educational use clear.',
+        "production_ready": True
+    },
+    'carver': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1943. No IP concerns.',
+        "production_ready": True
+    },
+    'carson': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1964. Rachel Carson Council manages legacy. Educational use clear; commercial use requires review.',
+        "production_ready": True
+    },
+    'copernicus': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1543. No IP concerns.',
+        "production_ready": True
+    },
+    'curie': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1934. No IP concerns.',
+        "production_ready": True
+    },
+    'darwin': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1882. No IP concerns.',
+        "production_ready": True
+    },
+    'dian_fossey': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Died 1985. Dian Fossey Gorilla Fund holds name/likeness for conservation use.',
+        "production_ready": True
+    },
+    'faraday': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1867. No IP concerns.',
+        "production_ready": True
+    },
+    'fibonacci': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~1250. No IP concerns.',
+        "production_ready": True
+    },
+    'franklin_r': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": "Died 1958. King's College London holds archival materials including Photo 51. Educational use clear; commercial use requires review.",
+        "production_ready": True
+    },
+    'galileo': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1642. No IP concerns.',
+        "production_ready": True
+    },
+    'hawking': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2018. Stephen Hawking Estate and Hawking brand actively managed. Commercial use requires clearance.',
+        "production_ready": False
+    },
+    'kepler': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1630. No IP concerns.',
+        "production_ready": True
+    },
+    'lovelace': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1852. No IP concerns.',
+        "production_ready": True
+    },
+    'maxwell': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1879. No IP concerns.',
+        "production_ready": True
+    },
+    'mcclintock': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Died 1992. CSHL holds archival materials; educational use clear.',
+        "production_ready": True
+    },
+    'mendel': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1884. No IP concerns.',
+        "production_ready": True
+    },
+    'mendeleev': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1907. No IP concerns.',
+        "production_ready": True
+    },
+    'newton': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1727. No IP concerns.',
+        "production_ready": True
+    },
+    'pasteur': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1895. No IP concerns.',
+        "production_ready": True
+    },
+    'planck': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Died 1947. Works in public domain; estate largely inactive.',
+        "production_ready": True
+    },
+    'ramanujan': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1920. No IP concerns.',
+        "production_ready": True
+    },
+    'rutherford': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1937. No IP concerns.',
+        "production_ready": True
+    },
+    'sagan': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1996. Carl Sagan Institute and estate hold name/likeness rights. Educational use generally tolerated; commercial use requires review.',
+        "production_ready": False
+    },
+    'von_neumann': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1957. Estate has limited claims; works entering public domain. Educational use clear.',
+        "production_ready": True
+    },
+
 }

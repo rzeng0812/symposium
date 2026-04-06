@@ -215,4 +215,130 @@ COMPLIANCE_COMPUTING = {
         "copyright_notes": "Died 1982. Russian-American national. RCA/GE corporate successors hold some institutional materials. Autobiography and technical papers are in published record. No significant active estate concerns for historical persona representation.",
         "production_ready": True
     },
+    'bell': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1922. No IP concerns.',
+        "production_ready": True
+    },
+    'edison': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1931. No IP concerns.',
+        "production_ready": True
+    },
+    'engelbart': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2013. Doug Engelbart Institute manages legacy. Commercial use requires review.',
+        "production_ready": False
+    },
+    'ford': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Died 1947. Ford estate has limited residual rights; educational use generally permitted.',
+        "production_ready": True
+    },
+    'franklin_b': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1790. No IP concerns.',
+        "production_ready": True
+    },
+    'gutenberg': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1468. No IP concerns.',
+        "production_ready": True
+    },
+    'hopper': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1992. Grace Hopper estate and US Navy archives. Educational use clear.',
+        "production_ready": True
+    },
+    'jobs': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2011. Apple Inc. and Jobs estate actively manage likeness rights. Commercial use requires legal review.',
+        "production_ready": False,
+        "high_sensitivity": True,
+        "high_sensitivity_notes": (
+            "Apple Inc. is an active party in rights management alongside the Jobs estate, "
+            "making this a corporate-backed claim rather than a family estate."
+        )
+    },
+    'lamarr': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2000. Hedy Lamarr estate manages rights. Educational use generally clear.',
+        "production_ready": False
+    },
+    'land_e': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1991. Educational use clear.',
+        "production_ready": False
+    },
+    'marconi': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1937. No IP concerns.',
+        "production_ready": True
+    },
+    'morse': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1872. No IP concerns.',
+        "production_ready": True
+    },
+    'ritchie': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 2011. Estate has limited claims; educational use clear.',
+        "production_ready": True
+    },
+    'tesla': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1943. No IP concerns. Note: Tesla Motors holds the Tesla brand trademark separately from the historical person.',
+        "production_ready": True
+    },
+    'turing': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": "Died 1954. Alan Turing estate and Bletchley Park hold some rights; educational use generally clear. Sensitive handling recommended given Turing's persecution.",
+        "production_ready": True
+    },
+    'von_braun': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1977. Estate has limited claims; NASA archives hold much material. Educational use clear. Note: documented use of forced labor — content review recommended.',
+        "production_ready": False
+    },
+    'watt': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1819. No IP concerns.',
+        "production_ready": True
+    },
+    'whitney': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1825. No IP concerns.',
+        "production_ready": True
+    },
+    'wright_brothers': {
+        "living": False,
+        "copyright_status": 'mostly_clear',
+        "copyright_notes": 'Orville died 1948. Works in public domain; Wright family has no active estate claims.',
+        "production_ready": True
+    },
+    'wright_fl': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1959. Frank Lloyd Wright Foundation actively manages his legacy and trademarks. Commercial use requires review.',
+        "production_ready": False
+    },
+
 }

@@ -275,4 +275,167 @@ COMPLIANCE_PHILOSOPHY = {
         "copyright_notes": "Died 1970 CE. British philosopher. Copyright 70 years pma = 2040 EU. The Bertrand Russell Archives are at McMaster University, Hamilton. The Bertrand Russell Peace Foundation and the Bertrand Russell Estate (managed through McMaster) are active. Works published before 1928 (Principia Mathematica 1910-13, Problems of Philosophy 1912) are in public domain. Later works (History of Western Philosophy 1945, Human Knowledge 1948, many essays) are under active copyright. The estate has historically been permissive about scholarly and educational use but is active. Depicting Russell as a historical figure discussing his documented positions is standard academic practice.",
         "production_ready": False
     },
+    "socrates": {
+        "living": False,
+        "copyright_status": "public_domain",
+        "copyright_notes": "Died ~399 BC. No IP concerns.",
+        "production_ready": True
+    },
+    "nietzsche": {
+        "living": False,
+        "copyright_status": "public_domain",
+        "copyright_notes": "Died 1900. Works in public domain globally.",
+        "production_ready": True
+    },
+    'al_khwarizmi': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~850. No IP concerns.',
+        "production_ready": True
+    },
+    'arendt': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1975. Hannah Arendt Literary Trust controls rights. Educational use generally clear; commercial deployment requires review.',
+        "production_ready": False
+    },
+    'aristotle': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~322 BC. No IP concerns.',
+        "production_ready": True
+    },
+    'beauvoir': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1986. Estate manages rights. Educational use generally clear.',
+        "production_ready": False
+    },
+    'confucius': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~479 BC. No IP concerns.',
+        "production_ready": True
+    },
+    'emerson': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1882. No IP concerns.',
+        "production_ready": True
+    },
+    'foucault': {
+        "living": False,
+        "copyright_status": 'review_needed',
+        "copyright_notes": 'Died 1984. Estate and IMEC hold archival rights. Educational use clear.',
+        "production_ready": False
+    },
+    'hobbes': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1679. No IP concerns.',
+        "production_ready": True
+    },
+    'hume': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1776. No IP concerns.',
+        "production_ready": True
+    },
+    'hypatia': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~415 AD. No IP concerns.',
+        "production_ready": True
+    },
+    'ibn_sina': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1037. No IP concerns.',
+        "production_ready": True
+    },
+    'imhotep': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~2600 BC. No IP concerns.',
+        "production_ready": True
+    },
+    'kant': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1804. No IP concerns.',
+        "production_ready": True
+    },
+    'kierkegaard': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1855. No IP concerns.',
+        "production_ready": True
+    },
+    'laozi': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~6th century BC. No IP concerns.',
+        "production_ready": True
+    },
+    'leibniz': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1716. No IP concerns.',
+        "production_ready": True
+    },
+    'locke': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1704. No IP concerns.',
+        "production_ready": True
+    },
+    'marcus_aurelius': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 180 AD. No IP concerns.',
+        "production_ready": True
+    },
+    'marx': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1883. Works in public domain globally.',
+        "production_ready": True
+    },
+    'pascal_b': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1662. No IP concerns.',
+        "production_ready": True
+    },
+    'plato': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died ~348 BC. No IP concerns.',
+        "production_ready": True
+    },
+    'rousseau': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1778. No IP concerns.',
+        "production_ready": True
+    },
+    'spinoza': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1677. No IP concerns.',
+        "production_ready": True
+    },
+    'voltaire': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1778. No IP concerns.',
+        "production_ready": True
+    },
+    'wollstonecraft': {
+        "living": False,
+        "copyright_status": 'public_domain',
+        "copyright_notes": 'Died 1797. No IP concerns.',
+        "production_ready": True
+    },
+
 }
