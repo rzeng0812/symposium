@@ -18,7 +18,7 @@ platform selects panels for maximum intellectual tension.
 Requires Python 3.13+ and an [Anthropic API key](https://console.anthropic.com).
 
 ```bash
-git clone https://github.com/your-org/symposium
+git clone https://github.com/rzeng0812/symposium
 cd symposium
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8765
@@ -48,7 +48,7 @@ All endpoints require the `X-API-Key` header.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | Endpoint index |
-| GET | `/figures` | List all 101 figures |
+| GET | `/figures` | List all 363 figures |
 | GET | `/figures/{id}` | Get a specific figure's profile |
 | POST | `/panel/suggest` | Recommend a panel for a question |
 | POST | `/ask` | Single-round panel response |

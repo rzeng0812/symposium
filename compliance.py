@@ -68,16 +68,6 @@ FIGURE_REGISTRY = {
         "copyright_notes": "Died 1519. No IP concerns.",
         "production_ready": True
     },
-    "sherlock_holmes": {
-        "living": False,
-        "copyright_status": "mostly_clear",
-        "copyright_notes": (
-            "Conan Doyle's works entered US public domain fully by 2023. "
-            "UK and some other jurisdictions may have residual claims. "
-            "Conan Doyle Estate Ltd has been litigious — monitor before scaling commercially."
-        ),
-        "production_ready": True
-    },
     'al_khwarizmi': {
         "living": False,
         "copyright_status": 'public_domain',
@@ -674,6 +664,50 @@ FIGURE_REGISTRY = {
         "production_ready": False
     },
 }
+
+# ─── Extended compliance registries ────────────────────────────────────────
+
+try:
+    from figures.compliance_philosophy import COMPLIANCE_PHILOSOPHY
+    FIGURE_REGISTRY.update(COMPLIANCE_PHILOSOPHY)
+except ImportError:
+    pass
+
+try:
+    from figures.compliance_writers import COMPLIANCE_WRITERS
+    FIGURE_REGISTRY.update(COMPLIANCE_WRITERS)
+except ImportError:
+    pass
+
+try:
+    from figures.compliance_social_science import COMPLIANCE_SOCIAL_SCIENCE
+    FIGURE_REGISTRY.update(COMPLIANCE_SOCIAL_SCIENCE)
+except ImportError:
+    pass
+
+try:
+    from figures.compliance_computing import COMPLIANCE_COMPUTING
+    FIGURE_REGISTRY.update(COMPLIANCE_COMPUTING)
+except ImportError:
+    pass
+
+try:
+    from figures.compliance_music import COMPLIANCE_MUSIC
+    FIGURE_REGISTRY.update(COMPLIANCE_MUSIC)
+except ImportError:
+    pass
+
+try:
+    from figures.compliance_physics import COMPLIANCE_PHYSICS
+    FIGURE_REGISTRY.update(COMPLIANCE_PHYSICS)
+except ImportError:
+    pass
+
+try:
+    from figures.staging.film_compliance import COMPLIANCE_FILM
+    FIGURE_REGISTRY.update(COMPLIANCE_FILM)
+except ImportError:
+    pass
 
 # Disclaimer text — surfaces Principle 1 in every response
 DISCLAIMER = (
