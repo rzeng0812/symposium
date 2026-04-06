@@ -1,12 +1,20 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Symposium" width="200" />
+  <img src="assets/logo.png" alt="Symposium" width="300" />
 </p>
 
-# Symposium
+<h1 align="center">Symposium</h1>
 
-AI-powered panels of historical figures, convened to answer your questions.
+<p align="center">
+  <a href="https://github.com/rzeng0812/symposium/releases/tag/v0.2.0"><img src="https://img.shields.io/badge/version-v0.2.0-C9A84C?style=flat-square" alt="version" /></a>
+  <a href="https://github.com/rzeng0812/symposium/commits/main"><img src="https://img.shields.io/github/last-commit/rzeng0812/symposium?style=flat-square&color=C9A84C" alt="last commit" /></a>
+  <a href="https://github.com/rzeng0812/symposium/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-C9A84C?style=flat-square" alt="license" /></a>
+  <img src="https://img.shields.io/badge/python-3.13+-C9A84C?style=flat-square" alt="python" />
+  <img src="https://img.shields.io/badge/figures-363-C9A84C?style=flat-square" alt="figures" />
+</p>
 
-Socrates interrogates. Nietzsche declares. Einstein calculates. You ask.
+<p align="center">AI-powered panels of historical figures, convened to answer your questions.</p>
+
+<p align="center"><em>Socrates interrogates. Nietzsche declares. Einstein calculates. You ask.</em></p>
 
 ## What it is
 
