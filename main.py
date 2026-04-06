@@ -548,7 +548,6 @@ def _ask_figure(figure: dict, question: str, api_key: str) -> str:
     with client.messages.stream(
         model="claude-opus-4-6",
         max_tokens=4096,
-        thinking={"type": "adaptive"},
         system=figure["system_prompt"],
         messages=[{"role": "user", "content": question}]
     ) as stream:
