@@ -1,4 +1,8 @@
-# <img src="assets/logo.png" height="48" alt="" /> Symposium
+<p align="center">
+  <img src="assets/logo.png" alt="Symposium" width="200" />
+</p>
+
+# Symposium
 
 AI-powered panels of historical figures, convened to answer your questions.
 
