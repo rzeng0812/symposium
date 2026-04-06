@@ -140,6 +140,19 @@ uvicorn main:app --port 8765 &
 ANTHROPIC_API_KEY=sk-ant-... pytest tests/ -v
 ```
 
+## Example conversations
+
+Four curated conversations from the panel — each showing a different question type and figure combination:
+
+| File | Question | Panel |
+|---|---|---|
+| [`truth-vs-power`](examples/2026-03-29-truth-vs-power.md) | Is there such a thing as objective truth, or only power? | Socrates · Nietzsche · Foucault · Hypatia |
+| [`machine-rights`](examples/2026-03-29-machine-rights.md) | If a machine can think, does it deserve rights? | Socrates · Turing · Hobbes · Ibn Sina |
+| [`civilization-violence`](examples/2026-03-29-civilization-violence.md) | Does civilization require violence to sustain itself? | Hobbes · Socrates · Marx · Laozi |
+| [`suffering-better`](examples/2026-03-29-suffering-better.md) | Does suffering make people better or just more damaged? | Nietzsche · Socrates · Baldwin · Marcus Aurelius |
+
+---
+
 ## Adding a figure
 
 Figures live in `figures/figures_<category>.py` (soul config) and
