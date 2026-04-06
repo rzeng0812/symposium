@@ -9,7 +9,15 @@ and post-generation output review.
 ## Architecture
 
 - **Backend:** FastAPI (`main.py`), Python 3.13
-- **Figure configs:** `figures/configs.py` — soul prompts, collision triggers, refusal patterns
+- **Figure configs:** `figures/configs.py` — thin coordinator; imports and merges all category modules
+  - `figures/figures_philosophy.py` — Philosophers, Philosopher/Mathematician, Philosopher/Physician (73 figures)
+  - `figures/figures_physics.py` — Scientists, Physicists, Chemists, Biologists, Mathematicians (61 figures)
+  - `figures/figures_computing.py` — Computer Scientists, Engineers, Inventors, Technologists (56 figures)
+  - `figures/figures_writers.py` — Writers, Poets (61 figures)
+  - `figures/figures_music.py` — Composers, Musicians, Singers (35 figures)
+  - `figures/figures_social_science.py` — Economists, Sociologists, Anthropologists, Linguists, Historians (43 figures)
+  - `figures/figures_art.py` — Visual Artists, Artist/Scientist (12 figures)
+  - Each category has a matching `figures/compliance_<category>.py`
 - **Panel selection:** `panel.py` — Claude-powered panel selection for max intellectual tension
 - **Chat:** `chat.py` — multi-turn group conversation with speaker selection
 - **Safety:** `law.py` — pre-generation harm classification (SAFE/UNSAFE)

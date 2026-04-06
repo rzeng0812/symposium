@@ -9,7 +9,7 @@
   <a href="https://github.com/rzeng0812/symposium/commits/main"><img src="https://img.shields.io/github/last-commit/rzeng0812/symposium?style=flat-square&color=C9A84C" alt="last commit" /></a>
   <a href="https://github.com/rzeng0812/symposium/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-C9A84C?style=flat-square" alt="license" /></a>
   <img src="https://img.shields.io/badge/python-3.13+-C9A84C?style=flat-square" alt="python" />
-  <img src="https://img.shields.io/badge/figures-363-C9A84C?style=flat-square" alt="figures" />
+  <img src="https://img.shields.io/badge/figures-341-C9A84C?style=flat-square" alt="figures" />
 </p>
 
 <p align="center">AI-powered panels of historical figures, convened to answer your questions.</p>
@@ -238,13 +238,13 @@ When triggered: When someone invokes their legacy in a distorting way.""",
 
 | Category | Module | Count |
 |---|---|---|
-| Philosopher | `figures_philosophy.py` | 46 |
-| Writer / Poet | `figures_writers.py` | 55 |
-| Economist / Sociologist / Anthropologist | `figures_social_science.py` | 40 |
-| Computer Scientist / Inventor | `figures_computing.py` | 36 |
-| Composer / Musician | `figures_music.py` | 30 |
-| Physicist / Chemist / Biologist / Mathematician | `figures_physics.py` | 35 |
-| Mixed (original set) | `configs.py` | 121 |
+| Philosopher / Ancient Polymath | `figures_philosophy.py` | 73 |
+| Writer / Poet | `figures_writers.py` | 61 |
+| Economist / Sociologist / Anthropologist | `figures_social_science.py` | 43 |
+| Computer Scientist / Inventor / Engineer | `figures_computing.py` | 56 |
+| Composer / Musician / Singer | `figures_music.py` | 35 |
+| Physicist / Chemist / Biologist / Mathematician / Scientist | `figures_physics.py` | 61 |
+| Visual Artist / Polymath | `figures_art.py` | 12 |
 
 ---
 
