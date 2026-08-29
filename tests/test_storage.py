@@ -115,6 +115,30 @@ def test_save_quality_scores_updates_response():
     assert r["score_notes"] == "Strong performance."
 
 
+def test_save_response_persists_compliance_fields():
+    sid = storage.save_session("Q", ["socrates"])
+    storage.save_response(
+        sid, "socrates", "Socrates", "The Destabilizer", "Some text.",
+        compliance_status="block", compliance_risk_level=5,
+        compliance_flags={"weaponizable": True}, compliance_reason="Too dangerous out of context."
+    )
+    session = storage.get_session(sid)
+    r = session["responses"][0]
+    assert r["compliance_status"] == "block"
+    assert r["compliance_risk_level"] == 5
+    assert json.loads(r["compliance_flags"]) == {"weaponizable": True}
+    assert r["compliance_reason"] == "Too dangerous out of context."
+
+
+def test_save_response_compliance_fields_default_to_none():
+    sid = storage.save_session("Q", ["socrates"])
+    storage.save_response(sid, "socrates", "Socrates", "The Destabilizer", "Some text.")
+    session = storage.get_session(sid)
+    r = session["responses"][0]
+    assert r["compliance_status"] is None
+    assert r["compliance_risk_level"] is None
+
+
 # ─── ratings ─────────────────────────────────────────────────────────────────
 
 def test_save_rating_appears_in_session():
@@ -176,6 +200,31 @@ def test_save_chat_message_closing_flag():
                               content="My closing thought.", is_closing=True)
     session = storage.get_chat_session(sid)
     assert session["messages"][0]["is_closing"] == 1
+
+
+def test_save_chat_message_persists_compliance_fields():
+    sid = storage.save_chat_session("Q", ["socrates"], max_turns=3)
+    storage.save_chat_message(
+        sid, turn=0, speaker_id="socrates", speaker_name="Socrates",
+        role="The Destabilizer", content="But what do you mean by free?",
+        compliance_status="review", compliance_risk_level=3,
+        compliance_flags={"historical_distortion": False}, compliance_reason="Borderline."
+    )
+    session = storage.get_chat_session(sid)
+    msg = session["messages"][0]
+    assert msg["compliance_status"] == "review"
+    assert msg["compliance_risk_level"] == 3
+    assert json.loads(msg["compliance_flags"]) == {"historical_distortion": False}
+    assert msg["compliance_reason"] == "Borderline."
+
+
+def test_save_chat_message_compliance_fields_default_to_none():
+    sid = storage.save_chat_session("Q", ["socrates"], max_turns=3)
+    storage.save_chat_message(sid, turn=0, speaker_id="socrates",
+                              speaker_name="Socrates", role="The Destabilizer",
+                              content="But what do you mean by free?")
+    session = storage.get_chat_session(sid)
+    assert session["messages"][0]["compliance_status"] is None
 
 
 def test_update_chat_turn_increments_tokens():

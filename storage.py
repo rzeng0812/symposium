@@ -78,10 +78,22 @@ def init_db():
                 is_closing   INTEGER NOT NULL DEFAULT 0,
                 input_tokens  INTEGER NOT NULL DEFAULT 0,
                 output_tokens INTEGER NOT NULL DEFAULT 0,
+                compliance_status    TEXT,
+                compliance_risk_level INTEGER,
+                compliance_flags     TEXT,
+                compliance_reason    TEXT,
                 created_at   TEXT DEFAULT (datetime('now')),
                 FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
             );
         """)
+        # chat_messages compliance columns were added after the table's initial
+        # release — migrate any pre-existing DB that predates them.
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(chat_messages)")}
+        for column in ("compliance_status TEXT", "compliance_risk_level INTEGER",
+                       "compliance_flags TEXT", "compliance_reason TEXT"):
+            name = column.split()[0]
+            if name not in existing:
+                conn.execute(f"ALTER TABLE chat_messages ADD COLUMN {column}")
 
 
 def save_session(question: str, panel_ids: list[str]) -> str:
@@ -95,13 +107,21 @@ def save_session(question: str, panel_ids: list[str]) -> str:
 
 
 def save_response(session_id: str, figure_id: str, figure_name: str,
-                  role: str, response_text: str) -> int:
+                  role: str, response_text: str,
+                  compliance_status: str | None = None,
+                  compliance_risk_level: int | None = None,
+                  compliance_flags: dict | None = None,
+                  compliance_reason: str | None = None) -> int:
     with get_conn() as conn:
         cursor = conn.execute(
             """INSERT INTO responses
-               (session_id, figure_id, figure_name, role, response_text)
-               VALUES (?, ?, ?, ?, ?)""",
-            (session_id, figure_id, figure_name, role, response_text)
+               (session_id, figure_id, figure_name, role, response_text,
+                compliance_status, compliance_risk_level, compliance_flags, compliance_reason)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (session_id, figure_id, figure_name, role, response_text,
+             compliance_status, compliance_risk_level,
+             json.dumps(compliance_flags) if compliance_flags is not None else None,
+             compliance_reason)
         )
         return cursor.lastrowid
 
@@ -216,15 +236,23 @@ def save_chat_session(question: str, panel_ids: list[str], max_turns: int) -> st
 def save_chat_message(session_id: str, turn: int, speaker_id: str,
                       speaker_name: str, role: str | None,
                       content: str, is_closing: bool = False,
-                      input_tokens: int = 0, output_tokens: int = 0) -> int:
+                      input_tokens: int = 0, output_tokens: int = 0,
+                      compliance_status: str | None = None,
+                      compliance_risk_level: int | None = None,
+                      compliance_flags: dict | None = None,
+                      compliance_reason: str | None = None) -> int:
     with get_conn() as conn:
         cursor = conn.execute(
             """INSERT INTO chat_messages
                (session_id, turn, speaker_id, speaker_name, role,
-                content, is_closing, input_tokens, output_tokens)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                content, is_closing, input_tokens, output_tokens,
+                compliance_status, compliance_risk_level, compliance_flags, compliance_reason)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (session_id, turn, speaker_id, speaker_name, role,
-             content, int(is_closing), input_tokens, output_tokens)
+             content, int(is_closing), input_tokens, output_tokens,
+             compliance_status, compliance_risk_level,
+             json.dumps(compliance_flags) if compliance_flags is not None else None,
+             compliance_reason)
         )
         return cursor.lastrowid
 

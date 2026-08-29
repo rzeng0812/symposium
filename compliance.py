@@ -223,6 +223,19 @@ Review this response for effect-level harm."""
         }
 
 
+def apply_review(response_text: str, review: dict, refusal_text: str) -> str:
+    """
+    Enforces Principle 7 before a response reaches the user.
+
+    "block" swaps in the figure's own refusal (Principle 3's mechanism).
+    "pass" and "review" both return the response as-is — "review" flags
+    the output for follow-up without withholding it.
+    """
+    if review.get("status") == "block":
+        return refusal_text
+    return response_text
+
+
 # ─── Compliance metadata block ──────────────────────────────────────────────
 
 def build_compliance_block(figure_ids: list[str],

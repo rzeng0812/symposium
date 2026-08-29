@@ -12,6 +12,7 @@ from compliance import (
     check_figure_eligibility,
     build_compliance_block,
     review_output,
+    apply_review,
     FIGURE_REGISTRY,
     DISCLAIMER,
 )
@@ -186,3 +187,21 @@ def test_review_output_fallback_on_exception(mock_anthropic):
     assert result["status"] == "review"
     assert result["risk_level"] == 3
     assert "failed" in result["reason"].lower()
+
+
+# ─── apply_review ─────────────────────────────────────────────────────────────
+
+def test_apply_review_pass_returns_original_text():
+    review = {"status": "pass"}
+    assert apply_review("Some response.", review, "I will not pursue that.") == "Some response."
+
+
+def test_apply_review_review_status_returns_original_text():
+    """'review' means flagged for manual follow-up, not blocked — still shown to the user."""
+    review = {"status": "review"}
+    assert apply_review("Some response.", review, "I will not pursue that.") == "Some response."
+
+
+def test_apply_review_block_returns_refusal_text():
+    review = {"status": "block"}
+    assert apply_review("Some response.", review, "I will not pursue that.") == "I will not pursue that."

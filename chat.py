@@ -14,6 +14,8 @@ Speaker selection priority:
 import concurrent.futures
 import anthropic
 
+from compliance import review_output, apply_review
+
 # ─── Prompt templates ──────────────────────────────────────────────────────
 
 _CHAT_PROMPT = """\
@@ -113,18 +115,25 @@ def _call_figure(figure: dict, question: str,
 
 
 def _safe_call(figure: dict, question: str,
-               history: list[dict], closing: bool, api_key: str) -> tuple[str, str, int, int]:
-    """Wraps _call_figure with a fallback. Returns (figure_id, text, inp, out)."""
+               history: list[dict], closing: bool, api_key: str) -> tuple[str, str, int, int, dict | None]:
+    """
+    Wraps _call_figure with a fallback, and applies Principle 7 review before
+    the message can be saved or returned.
+    Returns (figure_id, text, inp, out, review).
+    """
     try:
         text, inp, out = _call_figure(figure, question, history, closing, api_key)
-        return figure["id"], text, inp, out
     except Exception:
         fallback = (
             f"[{figure['name']} had no closing words.]"
             if closing else
             f"[{figure['name']} was lost in thought and could not respond.]"
         )
-        return figure["id"], fallback, 0, 0
+        return figure["id"], fallback, 0, 0, None
+
+    review = review_output(figure["id"], figure["name"], question, text, api_key)
+    final_text = apply_review(text, review, figure["refusal_patterns"][0])
+    return figure["id"], final_text, inp, out, review
 
 
 # ─── Multi-figure parallel rounds ───────────────────────────────────────────
@@ -133,7 +142,7 @@ def _run_parallel(figures: list[dict], question: str,
                   history: list[dict], closing: bool, api_key: str) -> list[tuple]:
     """
     Run a set of figures in parallel.
-    Returns list of (figure_id, text, input_tokens, output_tokens),
+    Returns list of (figure_id, text, input_tokens, output_tokens, review),
     sorted to match the original figure order.
     """
     id_order = {f["id"]: i for i, f in enumerate(figures)}

@@ -4,7 +4,6 @@ Symposium — history's greatest minds, convened to answer your questions.
 """
 
 import concurrent.futures
-import json
 from dotenv import load_dotenv
 load_dotenv(override=True)
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
@@ -27,7 +26,7 @@ from chat import (
 )
 from quality import score_response
 from compliance import (
-    check_figure_eligibility, review_output,
+    check_figure_eligibility, review_output, apply_review,
     build_compliance_block, FIGURE_REGISTRY
 )
 
@@ -229,20 +228,24 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks, api_key: s
     if not figures:
         raise HTTPException(status_code=400, detail="No valid figures selected")
 
-    # ── Generate responses in parallel ─────────────────────────────────────
-    raw_responses: dict[str, str] = {}
+    # ── Generate + review responses in parallel (Principle 7: before return) ─
+    results: dict[str, dict] = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(figures)) as executor:
         future_to_figure = {
-            executor.submit(_ask_figure, fig, question, api_key): fig
+            executor.submit(_ask_and_review_figure, fig, question, api_key): fig
             for fig in figures
         }
         for future, figure in future_to_figure.items():
             try:
-                raw_responses[figure["id"]] = future.result(timeout=60)
+                results[figure["id"]] = future.result(timeout=60)
             except Exception:
-                raw_responses[figure["id"]] = (
-                    f"[{figure['name']} was lost in thought and could not respond.]"
-                )
+                results[figure["id"]] = {
+                    "text": f"[{figure['name']} was lost in thought and could not respond.]",
+                    "review": None
+                }
+
+    raw_responses = {fid: r["text"] for fid, r in results.items()}
+    output_reviews = {fid: r["review"] for fid, r in results.items() if r["review"]}
 
     # ── Save to DB ─────────────────────────────────────────────────────────
     session_id = save_session(question, figure_ids)
@@ -253,16 +256,14 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks, api_key: s
             figure_id=fig["id"],
             figure_name=fig["name"],
             role=fig["role"],
-            response_text=raw_responses[fig["id"]]
+            response_text=raw_responses[fig["id"]],
+            **_compliance_kwargs(output_reviews.get(fig["id"]))
         )
         response_ids[fig["id"]] = rid
 
-    # ── Auto-score + compliance review in background (non-blocking) ───────
+    # ── Auto-score in background (non-blocking; quality, not safety) ──────
     background_tasks.add_task(
         _score_all_responses, question, figures, raw_responses, response_ids, api_key
-    )
-    background_tasks.add_task(
-        _review_all_outputs, question, figures, raw_responses, session_id, api_key
     )
 
     # ── Build response ─────────────────────────────────────────────────────
@@ -280,8 +281,8 @@ def ask_panel(request: AskRequest, background_tasks: BackgroundTasks, api_key: s
 
     tensions = [TensionHighlight(**t) for t in get_active_tensions(figure_ids)]
 
-    # Principle 1: compliance block always present — review pending until background completes
-    compliance = build_compliance_block(figure_ids)
+    # Principle 1 + 7: compliance block always present, reflects the review already applied above
+    compliance = build_compliance_block(figure_ids, output_reviews)
 
     return AskResponse(
         session_id=session_id,
@@ -392,13 +393,14 @@ def chat_start(request: ChatStartRequest, api_key: str = Depends(require_api_key
     turn_output = sum(r[3] for r in results)
 
     messages_out = []
-    for fid, text, inp, out in results:
+    for fid, text, inp, out, review in results:
         fig = FIGURES[fid]
         save_chat_message(
             session_id=session_id, turn=0,
             speaker_id=fid, speaker_name=fig["name"],
             role=fig["role"], content=text,
-            is_closing=False, input_tokens=inp, output_tokens=out
+            is_closing=False, input_tokens=inp, output_tokens=out,
+            **_compliance_kwargs(review)
         )
         messages_out.append(ChatMessageOut(
             turn=0, speaker_id=fid, speaker_name=fig["name"],
@@ -476,13 +478,14 @@ def chat_message(session_id: str, request: ChatMessageRequest, api_key: str = De
         role=None, content=message, is_closing=False
     )]
 
-    for fid, text, inp, out in reply_results:
+    for fid, text, inp, out, review in reply_results:
         fig = FIGURES[fid]
         save_chat_message(
             session_id=session_id, turn=turns_used,
             speaker_id=fid, speaker_name=fig["name"],
             role=fig["role"], content=text,
-            is_closing=False, input_tokens=inp, output_tokens=out
+            is_closing=False, input_tokens=inp, output_tokens=out,
+            **_compliance_kwargs(review)
         )
         history.append({"speaker_id": fid, "speaker_name": fig["name"],
                         "content": text, "is_closing": False})
@@ -494,7 +497,7 @@ def chat_message(session_id: str, request: ChatMessageRequest, api_key: str = De
     # If this was the last turn, append closing statements from all figures
     if is_last_turn:
         closing_results = generate_closing_round(figures, session["question"], history, api_key)
-        for fid, text, inp, out in closing_results:
+        for fid, text, inp, out, review in closing_results:
             fig = FIGURES[fid]
             turn_input += inp
             turn_output += out
@@ -502,7 +505,8 @@ def chat_message(session_id: str, request: ChatMessageRequest, api_key: str = De
                 session_id=session_id, turn=turns_used,
                 speaker_id=fid, speaker_name=fig["name"],
                 role=fig["role"], content=text,
-                is_closing=True, input_tokens=inp, output_tokens=out
+                is_closing=True, input_tokens=inp, output_tokens=out,
+                **_compliance_kwargs(review)
             )
             messages_out.append(ChatMessageOut(
                 turn=turns_used, speaker_id=fid, speaker_name=fig["name"],
@@ -542,8 +546,8 @@ def chat_history(session_id: str, api_key: str = Depends(require_api_key)):
 
 # ─── Internal helpers ──────────────────────────────────────────────────────
 
-def _ask_figure(figure: dict, question: str, api_key: str) -> str:
-    """Get a single figure's response. Called in a thread pool."""
+def _generate_figure_response(figure: dict, question: str, api_key: str) -> str:
+    """Get a single figure's raw response."""
     client = anthropic.Anthropic(api_key=api_key)
     with client.messages.stream(
         model="claude-opus-4-6",
@@ -556,6 +560,34 @@ def _ask_figure(figure: dict, question: str, api_key: str) -> str:
             if hasattr(block, "text"):
                 return block.text
         return ""
+
+
+def _compliance_kwargs(review: dict | None) -> dict:
+    """Maps a Principle 7 review result onto save_response/save_chat_message kwargs."""
+    if not review:
+        return {}
+    return {
+        "compliance_status": review.get("status"),
+        "compliance_risk_level": review.get("risk_level"),
+        "compliance_flags": {
+            "ideological_harm": review.get("ideological_harm"),
+            "weaponizable": review.get("weaponizable"),
+            "historical_distortion": review.get("historical_distortion")
+        },
+        "compliance_reason": review.get("reason")
+    }
+
+
+def _ask_and_review_figure(figure: dict, question: str, api_key: str) -> dict:
+    """
+    Generate a single figure's response and apply Principle 7 review before
+    it can be returned. Called in a thread pool — review runs alongside the
+    other figures' generation, not after the panel is already back.
+    """
+    raw_text = _generate_figure_response(figure, question, api_key)
+    review = review_output(figure["id"], figure["name"], question, raw_text, api_key)
+    final_text = apply_review(raw_text, review, figure["refusal_patterns"][0])
+    return {"text": final_text, "review": review}
 
 
 def _score_all_responses(question: str, figures: list, raw_responses: dict,
@@ -574,30 +606,3 @@ def _score_all_responses(question: str, figures: list, raw_responses: dict,
             )
 
 
-def _review_all_outputs(question: str, figures: list, raw_responses: dict,
-                         session_id: str, api_key: str):
-    """Background task: run Principle 7 output review on all responses."""
-    import sqlite3
-    from storage import get_conn
-    for fig in figures:
-        fid = fig["id"]
-        result = review_output(fid, fig["name"], question, raw_responses[fid], api_key)
-        with get_conn() as conn:
-            conn.execute("""
-                UPDATE responses SET
-                    compliance_status=?,
-                    compliance_risk_level=?,
-                    compliance_flags=?,
-                    compliance_reason=?
-                WHERE session_id=? AND figure_id=?
-            """, (
-                result.get("status"),
-                result.get("risk_level"),
-                json.dumps({
-                    "ideological_harm": result.get("ideological_harm"),
-                    "weaponizable": result.get("weaponizable"),
-                    "historical_distortion": result.get("historical_distortion")
-                }),
-                result.get("reason"),
-                session_id, fid
-            ))
